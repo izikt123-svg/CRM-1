@@ -48487,5 +48487,1015 @@ h1.page-title,
 })();
 </script>
 <!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ═══════════════════════════════════════════════════════════════════════
+     V68 - שדרוג מסיבי למשימה
+     1. תיקון Dropdown לבן
+     2. חיפוש לקוח/ספק עם חלון נפתח
+     3. בחירת מרובי עובדים
+     4. בחירת מרובי לקוחות
+     5. טיימר רץ עד סגירת המשימה
+     ═══════════════════════════════════════════════════════════════════════ -->
+
+<style id="t-v68-styles">
+
+/* ════════ FIX 1: DROPDOWNS - dark theme ════════ */
+#v67TaskAssign,
+#v67TaskAssign option,
+select.v67-form-input,
+select.v67-form-input option {
+  background: #1e1b4b !important;
+  color: #ffffff !important;
+}
+
+/* When dropdown opens */
+select.v67-form-input option:checked,
+select.v67-form-input option:hover {
+  background: #fbbf24 !important;
+  color: #15124d !important;
+}
+
+/* ════════ MULTI-SELECT EMPLOYEES ════════ */
+.v68-emp-multiselect {
+  width: 100%;
+  background: rgba(255,255,255,0.10);
+  border: 2px solid rgba(251,191,36,0.40);
+  border-radius: 11px;
+  padding: 10px;
+  min-height: 50px;
+  cursor: pointer;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  position: relative;
+}
+
+.v68-emp-multiselect:hover {
+  border-color: #fbbf24;
+  background: rgba(255,255,255,0.13);
+}
+
+.v68-emp-chip {
+  background: linear-gradient(135deg, #fbbf24, #d4a637);
+  color: #15124d;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 6px rgba(251,191,36,0.30);
+}
+
+.v68-emp-chip-remove {
+  background: rgba(21,18,77,0.20);
+  border: none;
+  color: #15124d;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.v68-emp-multiselect-placeholder {
+  color: rgba(255,255,255,0.50);
+  font-size: 14px;
+  font-weight: 700;
+  padding: 4px;
+}
+
+.v68-emp-multiselect-icon {
+  margin-right: auto;
+  color: #fbbf24;
+  font-size: 18px;
+}
+
+/* Picker dropdown */
+.v68-picker-dropdown {
+  position: fixed;
+  z-index: 999999;
+  background: linear-gradient(145deg, 
+    rgba(30,58,138,0.98),
+    rgba(21,18,77,0.98));
+  backdrop-filter: blur(30px);
+  border: 2px solid #fbbf24;
+  border-radius: 14px;
+  max-height: 400px;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.60);
+  display: none;
+  min-width: 320px;
+}
+
+.v68-picker-dropdown.open {
+  display: block;
+}
+
+.v68-picker-search {
+  position: sticky;
+  top: 0;
+  background: rgba(15,18,77,0.95);
+  padding: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+  z-index: 1;
+}
+
+.v68-picker-search input {
+  width: 100%;
+  background: rgba(255,255,255,0.10);
+  border: 2px solid rgba(251,191,36,0.40);
+  color: #fff;
+  border-radius: 9px;
+  padding: 10px 14px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  box-sizing: border-box;
+}
+
+.v68-picker-search input:focus {
+  outline: none;
+  border-color: #fbbf24;
+}
+
+.v68-picker-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 8px 12px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+}
+
+.v68-picker-tab {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+  color: rgba(255,255,255,0.75);
+  padding: 6px 14px;
+  border-radius: 8px 8px 0 0;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.v68-picker-tab.active {
+  background: rgba(251,191,36,0.20);
+  color: #fbbf24;
+  border-color: #fbbf24;
+  border-bottom-color: transparent;
+}
+
+.v68-picker-list {
+  padding: 6px;
+}
+
+.v68-picker-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.v68-picker-item:hover {
+  background: rgba(251,191,36,0.15);
+}
+
+.v68-picker-item.selected {
+  background: rgba(251,191,36,0.25);
+  border: 1px solid #fbbf24;
+}
+
+.v68-picker-item-checkbox {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255,255,255,0.40);
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 900;
+  color: #15124d;
+}
+
+.v68-picker-item.selected .v68-picker-item-checkbox {
+  background: #fbbf24;
+  border-color: #fbbf24;
+}
+
+.v68-picker-item-icon {
+  font-size: 20px;
+}
+
+.v68-picker-item-info {
+  flex: 1;
+}
+
+.v68-picker-item-name {
+  font-size: 14px;
+  font-weight: 900;
+  color: #fff;
+}
+
+.v68-picker-item-meta {
+  font-size: 11px;
+  color: rgba(255,255,255,0.65);
+  font-weight: 700;
+}
+
+.v68-picker-item-type {
+  background: rgba(96,165,250,0.20);
+  color: #93c5fd;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.v68-picker-footer {
+  position: sticky;
+  bottom: 0;
+  background: rgba(15,18,77,0.95);
+  padding: 12px;
+  border-top: 1px solid rgba(255,255,255,0.10);
+  display: flex;
+  gap: 8px;
+}
+
+.v68-picker-btn-done {
+  flex: 1;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  border: none;
+  padding: 10px;
+  border-radius: 9px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+/* ════════ ACTIVE TIMER ════════ */
+.v68-timer-card {
+  background: linear-gradient(135deg, 
+    rgba(16,185,129,0.20),
+    rgba(5,150,105,0.05));
+  border: 2px solid #10b981;
+  border-radius: 14px;
+  padding: 12px 16px;
+  margin: 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.v68-timer-icon {
+  font-size: 24px;
+  animation: v68-timer-tick 1s linear infinite;
+}
+
+@keyframes v68-timer-tick {
+  0%, 50% { transform: scale(1); }
+  25% { transform: scale(1.1); }
+  75% { transform: scale(0.95); }
+}
+
+.v68-timer-info {
+  flex: 1;
+}
+
+.v68-timer-label {
+  font-size: 12px;
+  color: #6ee7b7;
+  font-weight: 800;
+}
+
+.v68-timer-value {
+  font-family: monospace;
+  font-size: 22px;
+  font-weight: 900;
+  color: #6ee7b7;
+  letter-spacing: 2px;
+}
+
+</style>
+
+<script id="t-v68-features">
+(function() {
+  'use strict';
+  
+  function escapeHtml(s) {
+    if (!s) return '';
+    return String(s).replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+  }
+  
+  // ════════════════════════════════════════════════════════
+  // V68 STATE
+  // ════════════════════════════════════════════════════════
+  
+  const v68State = {
+    selectedEmps: [],
+    selectedClients: [],
+    pickerType: 'emp', // 'emp' | 'client'
+    pickerSearch: '',
+    pickerFilter: 'all'
+  };
+  
+  // ════════════════════════════════════════════════════════
+  // OVERRIDE v55CalDayClick - use enhanced modal with V68 features
+  // ════════════════════════════════════════════════════════
+  
+  // Patch the calendar day click to use NEW modal
+  setTimeout(() => {
+    if (typeof window.v55CalDayClick === 'function') {
+      // Override AGAIN with V68 enhanced version
+      window.v55CalDayClick = function(day) {
+        let year, month;
+        if (window.calState) {
+          year = window.calState.year;
+          month = window.calState.month;
+        } else {
+          const now = new Date();
+          year = now.getFullYear();
+          month = now.getMonth();
+        }
+        const date = new Date(year, month, day);
+        openV68TaskModal(date);
+      };
+    }
+  }, 1500);
+  
+  function openV68TaskModal(date) {
+    // Reset state
+    v68State.selectedEmps = [];
+    v68State.selectedClients = [];
+    
+    // Add current user as default
+    const u = window.STATE?.currentUser;
+    if (u) {
+      v68State.selectedEmps.push({
+        id: u.id,
+        name: u.name + ' (אני)',
+        dept: u.dept || ''
+      });
+    }
+    
+    let modal = document.getElementById('v68TaskModalBg');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'v68TaskModalBg';
+      modal.className = 'v67-cal-modal-bg';
+      modal.onclick = (e) => { 
+        if (e.target === modal) closeV68Modal(); 
+      };
+      document.body.appendChild(modal);
+    }
+    
+    const dateStr = date.toLocaleDateString('he-IL', { 
+      weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' 
+    });
+    const isoDate = date.toISOString().split('T')[0];
+    
+    modal.innerHTML = `
+      <div class="v67-cal-modal" onclick="event.stopPropagation()" style="max-width:620px">
+        <div class="v67-cal-modal-header">
+          <div class="v67-cal-modal-icon">📅</div>
+          <div style="flex:1">
+            <div class="v67-cal-modal-title">הוסף משימה</div>
+            <div class="v67-cal-modal-date">${dateStr}</div>
+          </div>
+          <button class="v67-cal-modal-close" onclick="window.v68CloseModal()">✕</button>
+        </div>
+        
+        <div class="v67-cal-modal-body">
+          <div class="v67-form-row">
+            <label class="v67-form-label">📝 תיאור המשימה:</label>
+            <input type="text" id="v68TaskDesc" class="v67-form-input" 
+              placeholder="לדוגמה: דיווח מע&quot;מ - סולושנס - אפריל" autofocus>
+          </div>
+          
+          <div class="v67-form-row">
+            <label class="v67-form-label">👥 משויך ל (בחירה מרובה):</label>
+            <div class="v68-emp-multiselect" id="v68EmpSelector" onclick="window.v68OpenEmpPicker(event)">
+              <span class="v68-emp-multiselect-icon">👆</span>
+              <span class="v68-emp-multiselect-placeholder">לחץ לבחירת עובדים...</span>
+            </div>
+          </div>
+          
+          <div class="v67-form-row v67-form-row-3">
+            <div>
+              <label class="v67-form-label">🕐 התחלה:</label>
+              <input type="time" id="v68TaskStart" class="v67-form-input" value="09:00">
+            </div>
+            <div>
+              <label class="v67-form-label">🕓 סיום:</label>
+              <input type="time" id="v68TaskEnd" class="v67-form-input" value="11:00">
+            </div>
+            <div>
+              <label class="v67-form-label">🚦 עדיפות:</label>
+              <select id="v68TaskPriority" class="v67-form-input" style="background:#1e1b4b !important;color:#fff !important">
+                <option value="normal" style="background:#1e1b4b">🟢 רגיל</option>
+                <option value="high" style="background:#1e1b4b">🟡 דחוף</option>
+                <option value="urgent" style="background:#1e1b4b">🔴 בהול</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="v67-form-row">
+            <label class="v67-form-label">📋 לקוחות / ספקים / רשויות (בחירה מרובה):</label>
+            <div class="v68-emp-multiselect" id="v68ClientSelector" onclick="window.v68OpenClientPicker(event)">
+              <span class="v68-emp-multiselect-icon">🔍</span>
+              <span class="v68-emp-multiselect-placeholder">לחץ לחיפוש ובחירה...</span>
+            </div>
+          </div>
+          
+          <div class="v67-form-row">
+            <label class="v67-form-label">📝 הערות:</label>
+            <textarea id="v68TaskNotes" class="v67-form-textarea" 
+              placeholder="הערות נוספות..."></textarea>
+          </div>
+          
+          <div style="background:rgba(16,185,129,0.10);border:1px solid rgba(16,185,129,0.30);border-radius:11px;padding:12px 14px;margin-top:10px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="font-size:20px">⏱️</span>
+              <div style="flex:1;font-size:13px;color:#6ee7b7;font-weight:800">
+                <strong>טיימר אוטומטי:</strong> השעון יתחיל לרוץ ברגע שעובדת תפתח את המשימה.<br>
+                ימשיך עד שתסגור את המשימה - וישמור את הזמן המדויק.
+              </div>
+            </div>
+          </div>
+          
+          <input type="hidden" id="v68TaskDate" value="${isoDate}">
+        </div>
+        
+        <div class="v67-cal-modal-footer">
+          <button class="v67-btn-cancel" onclick="window.v68CloseModal()">ביטול</button>
+          <button class="v67-btn-save" onclick="window.v68SaveTask()">📤 הוסף משימה</button>
+        </div>
+      </div>
+    `;
+    
+    modal.classList.add('open');
+    
+    // Update employee selector display
+    updateEmpSelectorDisplay();
+    
+    setTimeout(() => {
+      document.getElementById('v68TaskDesc')?.focus();
+    }, 200);
+  }
+  
+  window.v68CloseModal = function() {
+    const modal = document.getElementById('v68TaskModalBg');
+    if (modal) modal.classList.remove('open');
+    closePickers();
+  };
+  
+  function closePickers() {
+    document.querySelectorAll('.v68-picker-dropdown').forEach(p => p.classList.remove('open'));
+  }
+  
+  // ════════════════════════════════════════════════════════
+  // EMPLOYEE MULTI-PICKER
+  // ════════════════════════════════════════════════════════
+  
+  window.v68OpenEmpPicker = function(event) {
+    event.stopPropagation();
+    
+    const selector = document.getElementById('v68EmpSelector');
+    if (!selector) return;
+    
+    const rect = selector.getBoundingClientRect();
+    
+    let picker = document.getElementById('v68EmpPicker');
+    if (!picker) {
+      picker = document.createElement('div');
+      picker.id = 'v68EmpPicker';
+      picker.className = 'v68-picker-dropdown';
+      document.body.appendChild(picker);
+      
+      // Close on outside click
+      document.addEventListener('click', (e) => {
+        if (!picker.contains(e.target) && !selector.contains(e.target)) {
+          picker.classList.remove('open');
+        }
+      });
+    }
+    
+    picker.style.top = (rect.bottom + 8) + 'px';
+    picker.style.right = (window.innerWidth - rect.right) + 'px';
+    picker.style.width = rect.width + 'px';
+    
+    renderEmpPicker();
+    picker.classList.add('open');
+    
+    setTimeout(() => {
+      document.getElementById('v68EmpSearch')?.focus();
+    }, 100);
+  };
+  
+  function renderEmpPicker() {
+    const picker = document.getElementById('v68EmpPicker');
+    if (!picker) return;
+    
+    const emps = window.TAHORI_EMPLOYEES || [];
+    const search = v68State.pickerSearch.toLowerCase();
+    
+    let filtered = emps;
+    if (search) {
+      filtered = emps.filter(e => 
+        e.name?.toLowerCase().includes(search) ||
+        e.dept?.toLowerCase().includes(search) ||
+        e.role?.toLowerCase().includes(search)
+      );
+    }
+    
+    const selectedIds = new Set(v68State.selectedEmps.map(e => e.id));
+    
+    picker.innerHTML = `
+      <div class="v68-picker-search">
+        <input type="text" id="v68EmpSearch" placeholder="🔍 חיפוש עובד..." 
+          value="${escapeHtml(v68State.pickerSearch)}"
+          oninput="window.v68UpdateEmpSearch(this.value)">
+      </div>
+      
+      <div class="v68-picker-list">
+        ${filtered.length === 0 ? `
+          <div style="padding:30px;text-align:center;color:rgba(255,255,255,0.50);font-weight:700">
+            🔍 לא נמצאו עובדים
+          </div>
+        ` : filtered.map(emp => {
+          const isSelected = selectedIds.has(emp.id);
+          return `
+            <div class="v68-picker-item ${isSelected ? 'selected' : ''}" 
+              onclick="window.v68ToggleEmp('${emp.id}', '${escapeHtml(emp.name).replace(/'/g, "\\'")}', '${escapeHtml(emp.dept || '')}')">
+              <div class="v68-picker-item-checkbox">${isSelected ? '✓' : ''}</div>
+              <div class="v68-picker-item-icon">👤</div>
+              <div class="v68-picker-item-info">
+                <div class="v68-picker-item-name">${escapeHtml(emp.name)}</div>
+                <div class="v68-picker-item-meta">${escapeHtml(emp.dept || '')} - ${escapeHtml(emp.role || '')}</div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+      
+      <div class="v68-picker-footer">
+        <button class="v68-picker-btn-done" onclick="window.v68DoneEmpPicker()">
+          ✅ סיום (${v68State.selectedEmps.length} נבחרו)
+        </button>
+      </div>
+    `;
+  }
+  
+  window.v68UpdateEmpSearch = function(value) {
+    v68State.pickerSearch = value;
+    renderEmpPicker();
+    setTimeout(() => {
+      const inp = document.getElementById('v68EmpSearch');
+      if (inp) {
+        inp.focus();
+        inp.setSelectionRange(value.length, value.length);
+      }
+    }, 0);
+  };
+  
+  window.v68ToggleEmp = function(empId, empName, empDept) {
+    const existing = v68State.selectedEmps.findIndex(e => e.id === empId);
+    if (existing >= 0) {
+      v68State.selectedEmps.splice(existing, 1);
+    } else {
+      v68State.selectedEmps.push({ id: empId, name: empName, dept: empDept });
+    }
+    renderEmpPicker();
+    updateEmpSelectorDisplay();
+  };
+  
+  window.v68DoneEmpPicker = function() {
+    document.getElementById('v68EmpPicker')?.classList.remove('open');
+    updateEmpSelectorDisplay();
+  };
+  
+  function updateEmpSelectorDisplay() {
+    const sel = document.getElementById('v68EmpSelector');
+    if (!sel) return;
+    
+    if (v68State.selectedEmps.length === 0) {
+      sel.innerHTML = `
+        <span class="v68-emp-multiselect-icon">👆</span>
+        <span class="v68-emp-multiselect-placeholder">לחץ לבחירת עובדים...</span>
+      `;
+      return;
+    }
+    
+    sel.innerHTML = v68State.selectedEmps.map(emp => `
+      <div class="v68-emp-chip">
+        <span>${escapeHtml(emp.name)}</span>
+        <button class="v68-emp-chip-remove" onclick="event.stopPropagation();window.v68RemoveEmp('${emp.id}')">✕</button>
+      </div>
+    `).join('') + `<span style="margin-right:auto;color:#fbbf24;font-size:18px">👆</span>`;
+  }
+  
+  window.v68RemoveEmp = function(empId) {
+    v68State.selectedEmps = v68State.selectedEmps.filter(e => e.id !== empId);
+    updateEmpSelectorDisplay();
+  };
+  
+  // ════════════════════════════════════════════════════════
+  // CLIENT MULTI-PICKER (with search across 696 + suppliers + authorities)
+  // ════════════════════════════════════════════════════════
+  
+  window.v68OpenClientPicker = function(event) {
+    event.stopPropagation();
+    
+    const selector = document.getElementById('v68ClientSelector');
+    if (!selector) return;
+    
+    const rect = selector.getBoundingClientRect();
+    
+    let picker = document.getElementById('v68ClientPicker');
+    if (!picker) {
+      picker = document.createElement('div');
+      picker.id = 'v68ClientPicker';
+      picker.className = 'v68-picker-dropdown';
+      document.body.appendChild(picker);
+      
+      document.addEventListener('click', (e) => {
+        if (!picker.contains(e.target) && !selector.contains(e.target)) {
+          picker.classList.remove('open');
+        }
+      });
+    }
+    
+    picker.style.top = (rect.bottom + 8) + 'px';
+    picker.style.right = (window.innerWidth - rect.right) + 'px';
+    picker.style.width = rect.width + 'px';
+    
+    v68State.pickerSearch = '';
+    v68State.pickerFilter = 'all';
+    renderClientPicker();
+    picker.classList.add('open');
+    
+    setTimeout(() => {
+      document.getElementById('v68ClientSearch')?.focus();
+    }, 100);
+  };
+  
+  function renderClientPicker() {
+    const picker = document.getElementById('v68ClientPicker');
+    if (!picker) return;
+    
+    // Collect all items
+    const all = [];
+    
+    if (window.MOCK_CLIENTS) {
+      window.MOCK_CLIENTS.forEach(c => {
+        all.push({
+          id: 'client_' + c.id,
+          type: 'client',
+          typeName: 'לקוח',
+          icon: '👤',
+          name: c.name || c.fullName || 'ללא שם',
+          meta: c.email || c.phone || c.taxId || ''
+        });
+      });
+    }
+    
+    if (window.MOCK_SUPPLIERS) {
+      window.MOCK_SUPPLIERS.forEach(s => {
+        all.push({
+          id: 'supplier_' + s.id,
+          type: 'supplier',
+          typeName: 'ספק',
+          icon: '🏭',
+          name: s.name || 'ללא שם',
+          meta: s.email || s.phone || ''
+        });
+      });
+    }
+    
+    // Authorities
+    const auths = [
+      { id: 'auth_tax', type: 'authority', typeName: 'רשות', icon: '🏛️', name: 'רשות המסים', meta: '' },
+      { id: 'auth_btl', type: 'authority', typeName: 'רשות', icon: '🏥', name: 'ביטוח לאומי', meta: '' },
+      { id: 'auth_court', type: 'authority', typeName: 'רשות', icon: '⚖️', name: 'בתי משפט', meta: '' },
+      { id: 'auth_companies', type: 'authority', typeName: 'רשות', icon: '🏢', name: 'רשם החברות', meta: '' },
+    ];
+    all.push(...auths);
+    
+    // Filter
+    let filtered = all;
+    if (v68State.pickerFilter !== 'all') {
+      filtered = filtered.filter(item => item.type === v68State.pickerFilter);
+    }
+    
+    const search = v68State.pickerSearch.toLowerCase();
+    if (search.length >= 1) {
+      filtered = filtered.filter(item => 
+        item.name.toLowerCase().includes(search) ||
+        (item.meta && item.meta.toLowerCase().includes(search))
+      );
+    }
+    
+    // Counts
+    const counts = {
+      all: all.length,
+      client: all.filter(i => i.type === 'client').length,
+      supplier: all.filter(i => i.type === 'supplier').length,
+      authority: all.filter(i => i.type === 'authority').length,
+    };
+    
+    const selectedIds = new Set(v68State.selectedClients.map(c => c.id));
+    const display = filtered.slice(0, 80);
+    
+    picker.innerHTML = `
+      <div class="v68-picker-search">
+        <input type="text" id="v68ClientSearch" placeholder="🔍 חפש לפי שם, מייל, ת.ז..." 
+          value="${escapeHtml(v68State.pickerSearch)}"
+          oninput="window.v68UpdateClientSearch(this.value)">
+      </div>
+      
+      <div class="v68-picker-tabs">
+        <button class="v68-picker-tab ${v68State.pickerFilter === 'all' ? 'active' : ''}" 
+          onclick="window.v68SetClientFilter('all')">🌐 הכל (${counts.all})</button>
+        <button class="v68-picker-tab ${v68State.pickerFilter === 'client' ? 'active' : ''}" 
+          onclick="window.v68SetClientFilter('client')">👤 לקוחות (${counts.client})</button>
+        <button class="v68-picker-tab ${v68State.pickerFilter === 'supplier' ? 'active' : ''}" 
+          onclick="window.v68SetClientFilter('supplier')">🏭 ספקים (${counts.supplier})</button>
+        <button class="v68-picker-tab ${v68State.pickerFilter === 'authority' ? 'active' : ''}" 
+          onclick="window.v68SetClientFilter('authority')">🏛️ רשויות</button>
+      </div>
+      
+      <div class="v68-picker-list">
+        ${display.length === 0 ? `
+          <div style="padding:30px;text-align:center;color:rgba(255,255,255,0.50);font-weight:700">
+            🔍 לא נמצאו תוצאות.<br>
+            <span style="font-size:12px;opacity:0.7">נסה לחפש משהו אחר.</span>
+          </div>
+        ` : display.map(item => {
+          const isSelected = selectedIds.has(item.id);
+          return `
+            <div class="v68-picker-item ${isSelected ? 'selected' : ''}" 
+              onclick='window.v68ToggleClient(${JSON.stringify(item).replace(/'/g, "&apos;")})'>
+              <div class="v68-picker-item-checkbox">${isSelected ? '✓' : ''}</div>
+              <div class="v68-picker-item-icon">${item.icon}</div>
+              <div class="v68-picker-item-info">
+                <div class="v68-picker-item-name">${escapeHtml(item.name)}</div>
+                ${item.meta ? `<div class="v68-picker-item-meta">${escapeHtml(item.meta)}</div>` : ''}
+              </div>
+              <div class="v68-picker-item-type">${item.typeName}</div>
+            </div>
+          `;
+        }).join('')}
+        ${filtered.length > 80 ? `
+          <div style="text-align:center;padding:12px;color:rgba(255,255,255,0.50);font-size:11px">
+            מציג 80 ראשונים. חפש כדי לצמצם.
+          </div>
+        ` : ''}
+      </div>
+      
+      <div class="v68-picker-footer">
+        <button class="v68-picker-btn-done" onclick="window.v68DoneClientPicker()">
+          ✅ סיום (${v68State.selectedClients.length} נבחרו)
+        </button>
+      </div>
+    `;
+  }
+  
+  window.v68UpdateClientSearch = function(value) {
+    v68State.pickerSearch = value;
+    renderClientPicker();
+    setTimeout(() => {
+      const inp = document.getElementById('v68ClientSearch');
+      if (inp) {
+        inp.focus();
+        inp.setSelectionRange(value.length, value.length);
+      }
+    }, 0);
+  };
+  
+  window.v68SetClientFilter = function(filter) {
+    v68State.pickerFilter = filter;
+    renderClientPicker();
+  };
+  
+  window.v68ToggleClient = function(item) {
+    const existing = v68State.selectedClients.findIndex(c => c.id === item.id);
+    if (existing >= 0) {
+      v68State.selectedClients.splice(existing, 1);
+    } else {
+      v68State.selectedClients.push(item);
+    }
+    renderClientPicker();
+    updateClientSelectorDisplay();
+  };
+  
+  window.v68DoneClientPicker = function() {
+    document.getElementById('v68ClientPicker')?.classList.remove('open');
+    updateClientSelectorDisplay();
+  };
+  
+  function updateClientSelectorDisplay() {
+    const sel = document.getElementById('v68ClientSelector');
+    if (!sel) return;
+    
+    if (v68State.selectedClients.length === 0) {
+      sel.innerHTML = `
+        <span class="v68-emp-multiselect-icon">🔍</span>
+        <span class="v68-emp-multiselect-placeholder">לחץ לחיפוש ובחירה...</span>
+      `;
+      return;
+    }
+    
+    sel.innerHTML = v68State.selectedClients.map(c => `
+      <div class="v68-emp-chip" style="background:linear-gradient(135deg,#10b981,#059669);color:#fff">
+        <span>${c.icon} ${escapeHtml(c.name)}</span>
+        <button class="v68-emp-chip-remove" 
+          style="background:rgba(255,255,255,0.20);color:#fff"
+          onclick="event.stopPropagation();window.v68RemoveClient('${c.id}')">✕</button>
+      </div>
+    `).join('') + `<span style="margin-right:auto;color:#fbbf24;font-size:18px">🔍</span>`;
+  }
+  
+  window.v68RemoveClient = function(clientId) {
+    v68State.selectedClients = v68State.selectedClients.filter(c => c.id !== clientId);
+    updateClientSelectorDisplay();
+  };
+  
+  // ════════════════════════════════════════════════════════
+  // SAVE TASK WITH MULTI-SELECT + TIMER
+  // ════════════════════════════════════════════════════════
+  
+  window.v68SaveTask = function() {
+    const desc = document.getElementById('v68TaskDesc')?.value.trim();
+    const startTime = document.getElementById('v68TaskStart')?.value;
+    const endTime = document.getElementById('v68TaskEnd')?.value;
+    const priority = document.getElementById('v68TaskPriority')?.value;
+    const notes = document.getElementById('v68TaskNotes')?.value.trim();
+    const date = document.getElementById('v68TaskDate')?.value;
+    
+    if (!desc) { alert('יש להזין תיאור משימה'); return; }
+    if (v68State.selectedEmps.length === 0) { alert('יש לבחור לפחות עובד אחד'); return; }
+    if (!date) { alert('תאריך לא נמצא'); return; }
+    
+    const dueDate = new Date(date + 'T' + (startTime || '09:00')).getTime();
+    const endDate = endTime ? new Date(date + 'T' + endTime).getTime() : null;
+    const durationMin = endDate ? Math.round((endDate - dueDate) / 60000) : 0;
+    
+    const u = window.STATE?.currentUser || { name: 'מערכת', id: 'unknown' };
+    
+    // Create a task for EACH employee
+    const taskGroupId = 'tg_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+    const tasks = [];
+    
+    v68State.selectedEmps.forEach(emp => {
+      const task = {
+        id: 'wp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
+        groupId: taskGroupId,
+        empId: emp.id,
+        empName: emp.name,
+        description: desc,
+        dueDate: dueDate,
+        startTime: startTime,
+        endTime: endTime || '',
+        durationMin: durationMin,
+        priority: priority || 'normal',
+        clients: v68State.selectedClients, // Multi-clients!
+        notes: notes || '',
+        createdAt: Date.now(),
+        createdBy: u.name,
+        createdById: u.id,
+        status: 'pending',
+        feedback: null,
+        closedAt: null,
+        // Timer fields
+        timerStarted: null,
+        timerEnded: null,
+        actualMinutes: 0
+      };
+      tasks.push(task);
+    });
+    
+    try {
+      const existing = JSON.parse(localStorage.getItem('tahori_wp_tasks') || '[]');
+      const merged = [...existing, ...tasks];
+      localStorage.setItem('tahori_wp_tasks', JSON.stringify(merged));
+      
+      // Sync to Firebase
+      if (window.firebase && window.firebase.database) {
+        try {
+          tasks.forEach(task => {
+            window.firebase.database().ref('wp_tasks/' + task.id).set(task);
+          });
+        } catch(e) { console.warn('Firebase sync failed:', e); }
+      }
+    } catch(e) {
+      alert('שגיאה בשמירה: ' + e.message);
+      return;
+    }
+    
+    window.v68CloseModal();
+    
+    if (typeof window.showToast === 'function') {
+      const empNames = v68State.selectedEmps.map(e => e.name).join(', ');
+      const clientText = v68State.selectedClients.length > 0 
+        ? ` עבור ${v68State.selectedClients.length} לקוחות` 
+        : '';
+      window.showToast(`✅ ${tasks.length} משימות נוספו ל-${empNames}${clientText}`);
+    }
+    
+    // Re-render
+    if (typeof window.renderHebrewCalendar === 'function') {
+      setTimeout(window.renderHebrewCalendar, 200);
+    }
+  };
+  
+  // ════════════════════════════════════════════════════════
+  // TIMER - START WHEN TASK OPENED, STOP WHEN CLOSED
+  // ════════════════════════════════════════════════════════
+  
+  window.v68StartTaskTimer = function(taskId) {
+    try {
+      const tasks = JSON.parse(localStorage.getItem('tahori_wp_tasks') || '[]');
+      const idx = tasks.findIndex(t => t.id === taskId);
+      if (idx === -1) return;
+      
+      if (!tasks[idx].timerStarted) {
+        tasks[idx].timerStarted = Date.now();
+        tasks[idx].status = 'in_progress';
+        localStorage.setItem('tahori_wp_tasks', JSON.stringify(tasks));
+        
+        // Firebase sync
+        if (window.firebase && window.firebase.database) {
+          try {
+            window.firebase.database().ref('wp_tasks/' + taskId).update({
+              timerStarted: tasks[idx].timerStarted,
+              status: 'in_progress'
+            });
+          } catch(e) {}
+        }
+        
+        if (typeof window.showToast === 'function') {
+          window.showToast('⏱️ הטיימר התחיל!');
+        }
+      }
+    } catch(e) {}
+  };
+  
+  window.v68StopTaskTimer = function(taskId) {
+    try {
+      const tasks = JSON.parse(localStorage.getItem('tahori_wp_tasks') || '[]');
+      const idx = tasks.findIndex(t => t.id === taskId);
+      if (idx === -1) return null;
+      
+      if (tasks[idx].timerStarted && !tasks[idx].timerEnded) {
+        tasks[idx].timerEnded = Date.now();
+        tasks[idx].actualMinutes = Math.round((tasks[idx].timerEnded - tasks[idx].timerStarted) / 60000);
+        localStorage.setItem('tahori_wp_tasks', JSON.stringify(tasks));
+        
+        if (window.firebase && window.firebase.database) {
+          try {
+            window.firebase.database().ref('wp_tasks/' + taskId).update({
+              timerEnded: tasks[idx].timerEnded,
+              actualMinutes: tasks[idx].actualMinutes
+            });
+          } catch(e) {}
+        }
+        
+        return tasks[idx].actualMinutes;
+      }
+    } catch(e) {}
+    return null;
+  };
+  
+  // ════════════════════════════════════════════════════════
+  // INIT
+  // ════════════════════════════════════════════════════════
+  
+  function init() {
+    setTimeout(() => {
+      if (typeof window.showToast === 'function') {
+        window.showToast('🎉 V68 - בחירה מרובה + חיפוש לקוחות + טיימר!');
+      }
+    }, 5500);
+    
+    console.log('🎉 V68 - Multi-select + Search + Timer loaded');
+  }
+  
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    setTimeout(init, 2000);
+  }
+})();
+</script>
 </body>
 </html>
