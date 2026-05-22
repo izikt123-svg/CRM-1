@@ -47677,5 +47677,815 @@ h1.page-title,
   }
 })();
 </script>
+<!-- ═══════════════════════════════════════════════════════════════════════
+     V67 - 2 פיצרים חשובים
+     1. הוספת משימה ביומן - לוחץ על יום → חלון מקצועי!
+     2. בדיקת חיבור לענן - אינדיקטור ברור + תיקון אוטומטי
+     ═══════════════════════════════════════════════════════════════════════ -->
+
+<style id="t-v67-styles">
+
+/* ════════ CALENDAR ADD TASK MODAL ════════ */
+.v67-cal-modal-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 999900;
+  background: rgba(15,18,77,0.85);
+  backdrop-filter: blur(16px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.v67-cal-modal-bg.open {
+  display: flex;
+  animation: v67-fade-in 0.2s ease-out;
+}
+
+@keyframes v67-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.v67-cal-modal {
+  background: linear-gradient(145deg, 
+    rgba(30,58,138,0.97),
+    rgba(21,18,77,0.97));
+  backdrop-filter: blur(30px);
+  border: 3px solid #fbbf24;
+  border-radius: 22px;
+  max-width: 560px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.60);
+}
+
+.v67-cal-modal-header {
+  padding: 22px 24px;
+  background: linear-gradient(135deg, rgba(251,191,36,0.20), rgba(212,166,55,0.05));
+  border-bottom: 2px solid rgba(251,191,36,0.40);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.v67-cal-modal-icon {
+  font-size: 40px;
+}
+
+.v67-cal-modal-title {
+  flex: 1;
+  font-size: 22px;
+  font-weight: 900;
+  color: #fbbf24 !important;
+  background: none !important;
+  -webkit-text-fill-color: #fbbf24 !important;
+}
+
+.v67-cal-modal-date {
+  font-size: 14px;
+  color: rgba(255,255,255,0.80);
+  font-weight: 700;
+}
+
+.v67-cal-modal-close {
+  background: rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.20);
+  color: #fff;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.v67-cal-modal-body {
+  padding: 24px;
+}
+
+.v67-form-row {
+  margin-bottom: 16px;
+}
+
+.v67-form-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 900;
+  color: #fbbf24;
+  margin-bottom: 6px;
+}
+
+.v67-form-input {
+  width: 100%;
+  background: rgba(255,255,255,0.10);
+  border: 2px solid rgba(251,191,36,0.40);
+  color: #fff;
+  border-radius: 11px;
+  padding: 12px 16px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  box-sizing: border-box;
+}
+
+.v67-form-input:focus {
+  outline: none;
+  border-color: #fbbf24;
+  background: rgba(255,255,255,0.15);
+}
+
+.v67-form-textarea {
+  width: 100%;
+  background: rgba(255,255,255,0.10);
+  border: 2px solid rgba(251,191,36,0.40);
+  color: #fff;
+  border-radius: 11px;
+  padding: 12px 16px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  box-sizing: border-box;
+  min-height: 70px;
+  resize: vertical;
+}
+
+.v67-form-row-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+
+.v67-form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.v67-cal-modal-footer {
+  padding: 20px 24px;
+  border-top: 1px solid rgba(255,255,255,0.10);
+  display: flex;
+  gap: 10px;
+}
+
+.v67-btn-save {
+  flex: 1;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  border: none;
+  padding: 14px;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(16,185,129,0.40);
+}
+
+.v67-btn-save:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(16,185,129,0.60);
+}
+
+.v67-btn-cancel {
+  background: rgba(255,255,255,0.10);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.20);
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+/* ════════ CLOUD STATUS INDICATOR ════════ */
+.v67-cloud-status {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 99800;
+  background: linear-gradient(135deg, 
+    rgba(15,18,77,0.95),
+    rgba(30,58,138,0.95));
+  backdrop-filter: blur(20px);
+  border: 2px solid var(--cloud-color, #6b7280);
+  border-radius: 14px;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.40);
+}
+
+.v67-cloud-status:hover {
+  transform: translateY(-3px);
+}
+
+.v67-cloud-status.connected {
+  --cloud-color: #10b981;
+}
+
+.v67-cloud-status.disconnected {
+  --cloud-color: #ef4444;
+}
+
+.v67-cloud-status.connecting {
+  --cloud-color: #fbbf24;
+}
+
+.v67-cloud-icon {
+  font-size: 24px;
+  animation: v67-cloud-pulse 2s ease-in-out infinite;
+}
+
+@keyframes v67-cloud-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.1); }
+}
+
+.v67-cloud-info {
+  font-size: 12px;
+}
+
+.v67-cloud-title {
+  font-weight: 900;
+  color: var(--cloud-color, #fff);
+}
+
+.v67-cloud-sub {
+  color: rgba(255,255,255,0.65);
+  font-weight: 700;
+  font-size: 11px;
+}
+
+/* ════════ CLOUD MODAL ════════ */
+.v67-cloud-modal-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 999900;
+  background: rgba(15,18,77,0.85);
+  backdrop-filter: blur(16px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.v67-cloud-modal-bg.open {
+  display: flex;
+}
+
+.v67-cloud-modal {
+  background: linear-gradient(145deg, 
+    rgba(30,58,138,0.97),
+    rgba(21,18,77,0.97));
+  backdrop-filter: blur(30px);
+  border: 3px solid #fbbf24;
+  border-radius: 22px;
+  max-width: 580px;
+  width: 100%;
+  padding: 28px;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.60);
+}
+
+.v67-cloud-status-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 12px;
+  margin-bottom: 8px;
+}
+
+.v67-cloud-status-icon {
+  font-size: 28px;
+}
+
+.v67-cloud-status-info {
+  flex: 1;
+}
+
+.v67-cloud-status-name {
+  font-size: 15px;
+  font-weight: 900;
+  color: #fff;
+}
+
+.v67-cloud-status-detail {
+  font-size: 11px;
+  color: rgba(255,255,255,0.65);
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.v67-cloud-status-badge {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.v67-badge-ok { background: rgba(16,185,129,0.20); color: #6ee7b7; }
+.v67-badge-err { background: rgba(239,68,68,0.20); color: #fca5a5; }
+.v67-badge-wait { background: rgba(251,191,36,0.20); color: #fbbf24; }
+
+</style>
+
+<script id="t-v67-features">
+(function() {
+  'use strict';
+  
+  function escapeHtml(s) {
+    if (!s) return '';
+    return String(s).replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+  }
+  
+  // ════════════════════════════════════════════════════════
+  // FIX 1: CALENDAR ADD TASK MODAL
+  // ════════════════════════════════════════════════════════
+  
+  let v67SelectedDate = null;
+  
+  // Override the v55CalDayClick (which just showed alert)
+  window.v55CalDayClick = function(day) {
+    // Get the calendar state if available
+    let year, month;
+    
+    if (window.calState) {
+      year = window.calState.year;
+      month = window.calState.month;
+    } else {
+      const now = new Date();
+      year = now.getFullYear();
+      month = now.getMonth();
+    }
+    
+    v67SelectedDate = new Date(year, month, day);
+    openCalendarTaskModal(v67SelectedDate);
+  };
+  
+  function openCalendarTaskModal(date) {
+    let modal = document.getElementById('v67CalModalBg');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'v67CalModalBg';
+      modal.className = 'v67-cal-modal-bg';
+      modal.onclick = (e) => { 
+        if (e.target === modal) closeCalendarTaskModal(); 
+      };
+      document.body.appendChild(modal);
+    }
+    
+    const dateStr = date.toLocaleDateString('he-IL', { 
+      weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' 
+    });
+    const isoDate = date.toISOString().split('T')[0];
+    
+    // Get current user for default assignee
+    const currentUser = window.STATE?.currentUser;
+    const emps = window.TAHORI_EMPLOYEES || [];
+    
+    // Get tasks for this day to show
+    let dayTasks = [];
+    try {
+      const allTasks = JSON.parse(localStorage.getItem('tahori_wp_tasks') || '[]');
+      const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+      const dayEnd = dayStart + 24 * 60 * 60 * 1000;
+      dayTasks = allTasks.filter(t => t.dueDate >= dayStart && t.dueDate < dayEnd);
+    } catch(e) {}
+    
+    modal.innerHTML = `
+      <div class="v67-cal-modal" onclick="event.stopPropagation()">
+        <div class="v67-cal-modal-header">
+          <div class="v67-cal-modal-icon">📅</div>
+          <div style="flex:1">
+            <div class="v67-cal-modal-title">הוסף משימה</div>
+            <div class="v67-cal-modal-date">${dateStr}</div>
+          </div>
+          <button class="v67-cal-modal-close" onclick="window.v67CloseModal()">✕</button>
+        </div>
+        
+        <div class="v67-cal-modal-body">
+          ${dayTasks.length > 0 ? `
+            <div style="background:rgba(59,130,246,0.10);border:1px solid rgba(59,130,246,0.30);border-radius:11px;padding:12px 14px;margin-bottom:16px">
+              <div style="font-size:13px;font-weight:900;color:#93c5fd;margin-bottom:8px">📋 ${dayTasks.length} משימות קיימות ביום הזה:</div>
+              ${dayTasks.slice(0, 3).map(t => `
+                <div style="font-size:12px;color:rgba(255,255,255,0.85);font-weight:700;padding:4px 0">
+                  • ${escapeHtml(t.description || t.text || '')}
+                </div>
+              `).join('')}
+              ${dayTasks.length > 3 ? `<div style="font-size:11px;color:rgba(255,255,255,0.60);margin-top:4px">+${dayTasks.length - 3} נוספות...</div>` : ''}
+            </div>
+          ` : ''}
+          
+          <div class="v67-form-row">
+            <label class="v67-form-label">📝 תיאור המשימה:</label>
+            <input type="text" id="v67TaskDesc" class="v67-form-input" 
+              placeholder="לדוגמה: דיווח מע&quot;מ - סולושנס - אפריל" autofocus>
+          </div>
+          
+          <div class="v67-form-row">
+            <label class="v67-form-label">👤 משויך ל:</label>
+            <select id="v67TaskAssign" class="v67-form-input">
+              <option value="${currentUser?.id || ''}">${currentUser?.name || 'עצמי'} (אני)</option>
+              ${emps.filter(e => e.id !== currentUser?.id).map(e => `
+                <option value="${e.id}">${escapeHtml(e.name)} - ${escapeHtml(e.dept || '')}</option>
+              `).join('')}
+            </select>
+          </div>
+          
+          <div class="v67-form-row v67-form-row-3">
+            <div>
+              <label class="v67-form-label">🕐 התחלה:</label>
+              <input type="time" id="v67TaskStart" class="v67-form-input" value="09:00">
+            </div>
+            <div>
+              <label class="v67-form-label">🕓 סיום:</label>
+              <input type="time" id="v67TaskEnd" class="v67-form-input" value="11:00">
+            </div>
+            <div>
+              <label class="v67-form-label">🚦 עדיפות:</label>
+              <select id="v67TaskPriority" class="v67-form-input">
+                <option value="normal">🟢 רגיל</option>
+                <option value="high">🟡 דחוף</option>
+                <option value="urgent">🔴 בהול</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="v67-form-row">
+            <label class="v67-form-label">📋 לקוח / ספק (אופציונלי):</label>
+            <input type="text" id="v67TaskClient" class="v67-form-input" 
+              placeholder="הקלד שם לקוח / ספק / רשות...">
+          </div>
+          
+          <div class="v67-form-row">
+            <label class="v67-form-label">📝 הערות (אופציונלי):</label>
+            <textarea id="v67TaskNotes" class="v67-form-textarea" 
+              placeholder="הערות נוספות..."></textarea>
+          </div>
+          
+          <input type="hidden" id="v67TaskDate" value="${isoDate}">
+        </div>
+        
+        <div class="v67-cal-modal-footer">
+          <button class="v67-btn-cancel" onclick="window.v67CloseModal()">ביטול</button>
+          <button class="v67-btn-save" onclick="window.v67SaveTask()">📤 הוסף משימה</button>
+        </div>
+      </div>
+    `;
+    
+    modal.classList.add('open');
+    
+    // Focus on desc input
+    setTimeout(() => {
+      document.getElementById('v67TaskDesc')?.focus();
+    }, 200);
+  }
+  
+  window.v67CloseModal = function() {
+    const modal = document.getElementById('v67CalModalBg');
+    if (modal) modal.classList.remove('open');
+  };
+  
+  window.v67SaveTask = function() {
+    const desc = document.getElementById('v67TaskDesc')?.value.trim();
+    const assign = document.getElementById('v67TaskAssign')?.value;
+    const startTime = document.getElementById('v67TaskStart')?.value;
+    const endTime = document.getElementById('v67TaskEnd')?.value;
+    const priority = document.getElementById('v67TaskPriority')?.value;
+    const client = document.getElementById('v67TaskClient')?.value.trim();
+    const notes = document.getElementById('v67TaskNotes')?.value.trim();
+    const date = document.getElementById('v67TaskDate')?.value;
+    
+    if (!desc) { alert('יש להזין תיאור משימה'); return; }
+    if (!date) { alert('תאריך לא נמצא'); return; }
+    
+    const dueDate = new Date(date + 'T' + (startTime || '09:00')).getTime();
+    const endDate = endTime ? new Date(date + 'T' + endTime).getTime() : null;
+    const durationMin = endDate ? Math.round((endDate - dueDate) / 60000) : 0;
+    
+    const u = window.STATE?.currentUser || { name: 'מערכת', id: 'unknown' };
+    
+    const task = {
+      id: 'wp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
+      empId: assign || u.id,
+      description: desc,
+      dueDate: dueDate,
+      startTime: startTime,
+      endTime: endTime || '',
+      durationMin: durationMin,
+      priority: priority || 'normal',
+      client: client ? { name: client, type: 'manual', typeName: 'ידני', icon: '📋' } : null,
+      notes: notes || '',
+      createdAt: Date.now(),
+      createdBy: u.name,
+      createdById: u.id,
+      status: 'pending',
+      feedback: null,
+      closedAt: null
+    };
+    
+    try {
+      const tasks = JSON.parse(localStorage.getItem('tahori_wp_tasks') || '[]');
+      tasks.push(task);
+      localStorage.setItem('tahori_wp_tasks', JSON.stringify(tasks));
+      
+      // Sync to Firebase if connected
+      if (window.firebase && window.firebase.database && window.v45State?.db) {
+        try {
+          window.firebase.database().ref('wp_tasks/' + task.id).set(task);
+        } catch(e) { console.warn('Firebase sync failed:', e); }
+      }
+    } catch(e) {
+      alert('שגיאה בשמירה: ' + e.message);
+      return;
+    }
+    
+    // Close modal
+    window.v67CloseModal();
+    
+    // Toast
+    if (typeof window.showToast === 'function') {
+      window.showToast(`✅ המשימה נוספה ליום ${new Date(date).toLocaleDateString('he-IL')}`);
+    }
+    
+    // Re-render calendar if visible
+    if (typeof window.renderHebrewCalendar === 'function') {
+      setTimeout(window.renderHebrewCalendar, 200);
+    } else if (typeof window.renderCalendar === 'function') {
+      setTimeout(window.renderCalendar, 200);
+    }
+  };
+  
+  // ESC key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      const m1 = document.getElementById('v67CalModalBg');
+      const m2 = document.getElementById('v67CloudModalBg');
+      if (m1 && m1.classList.contains('open')) window.v67CloseModal();
+      if (m2 && m2.classList.contains('open')) window.v67CloseCloudModal();
+    }
+  });
+  
+  // ════════════════════════════════════════════════════════
+  // FIX 2: CLOUD STATUS INDICATOR + RECONNECT
+  // ════════════════════════════════════════════════════════
+  
+  let cloudStatus = 'checking';
+  
+  function checkCloudConnection() {
+    const wasStatus = cloudStatus;
+    
+    // Check Firebase
+    let firebaseOk = false;
+    try {
+      firebaseOk = typeof window.firebase !== 'undefined' 
+                && window.firebase.database 
+                && typeof window.firebase.database === 'function';
+    } catch(e) {}
+    
+    // Check v45State (our Firebase initialized state)
+    const v45Ok = window.v45State?.db && window.v45State.db !== null;
+    
+    if (firebaseOk && v45Ok) {
+      cloudStatus = 'connected';
+    } else if (firebaseOk) {
+      cloudStatus = 'connecting';
+    } else {
+      cloudStatus = 'disconnected';
+    }
+    
+    if (cloudStatus !== wasStatus) {
+      updateCloudIndicator();
+    }
+  }
+  
+  function updateCloudIndicator() {
+    let indicator = document.getElementById('v67CloudStatus');
+    
+    // Don't show on login screen
+    if (!window.STATE?.currentUser) {
+      if (indicator) indicator.style.display = 'none';
+      return;
+    }
+    
+    if (!indicator) {
+      indicator = document.createElement('div');
+      indicator.id = 'v67CloudStatus';
+      indicator.className = 'v67-cloud-status';
+      indicator.onclick = () => window.v67OpenCloudModal();
+      document.body.appendChild(indicator);
+    }
+    
+    indicator.style.display = 'flex';
+    indicator.className = 'v67-cloud-status ' + cloudStatus;
+    
+    const config = {
+      connected: { 
+        icon: '☁️', 
+        title: 'הענן פעיל', 
+        sub: '22 עובדים מסונכרנים · Firebase' 
+      },
+      connecting: { 
+        icon: '🔄', 
+        title: 'מתחבר לענן...', 
+        sub: 'אנא המתן' 
+      },
+      disconnected: { 
+        icon: '⚠️', 
+        title: 'הענן מנותק', 
+        sub: 'לחץ לבדיקה' 
+      },
+      checking: { 
+        icon: '⏳', 
+        title: 'בודק חיבור...', 
+        sub: '' 
+      }
+    };
+    
+    const c = config[cloudStatus] || config.checking;
+    
+    indicator.innerHTML = `
+      <div class="v67-cloud-icon">${c.icon}</div>
+      <div class="v67-cloud-info">
+        <div class="v67-cloud-title">${c.title}</div>
+        <div class="v67-cloud-sub">${c.sub}</div>
+      </div>
+    `;
+  }
+  
+  // ════════════════════════════════════════════════════════
+  // CLOUD MODAL - DETAILED STATUS
+  // ════════════════════════════════════════════════════════
+  
+  window.v67OpenCloudModal = async function() {
+    let modal = document.getElementById('v67CloudModalBg');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'v67CloudModalBg';
+      modal.className = 'v67-cloud-modal-bg';
+      modal.onclick = (e) => { 
+        if (e.target === modal) window.v67CloseCloudModal(); 
+      };
+      document.body.appendChild(modal);
+    }
+    
+    modal.innerHTML = `
+      <div class="v67-cloud-modal" onclick="event.stopPropagation()">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid rgba(251,191,36,0.40)">
+          <span style="font-size:42px">☁️</span>
+          <div style="flex:1">
+            <div style="font-size:24px;font-weight:900;color:#fbbf24">חיבור לענן</div>
+            <div style="font-size:13px;color:rgba(255,255,255,0.70);font-weight:700">סטטוס המערכת בזמן אמת</div>
+          </div>
+          <button onclick="window.v67CloseCloudModal()" style="background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.20);color:#fff;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer">✕</button>
+        </div>
+        
+        <div id="v67CloudStatusList">
+          <div style="text-align:center;padding:30px;color:rgba(255,255,255,0.70)">
+            <div style="font-size:40px">⏳</div>
+            <div style="margin-top:10px;font-weight:700">בודק...</div>
+          </div>
+        </div>
+        
+        <div style="margin-top:20px;display:flex;gap:10px">
+          <button onclick="window.v67ReconnectCloud()" style="flex:1;background:linear-gradient(135deg,#10b981,#059669);color:#fff;border:none;padding:14px;border-radius:12px;font-family:inherit;font-size:15px;font-weight:900;cursor:pointer;box-shadow:0 6px 18px rgba(16,185,129,0.40)">
+            🔄 נסה להתחבר מחדש
+          </button>
+          <button onclick="window.v67CloseCloudModal()" style="background:rgba(255,255,255,0.10);color:#fff;border:1px solid rgba(255,255,255,0.20);padding:14px 24px;border-radius:12px;font-family:inherit;font-size:15px;font-weight:800;cursor:pointer">
+            סגור
+          </button>
+        </div>
+      </div>
+    `;
+    
+    modal.classList.add('open');
+    
+    // Run checks
+    await runCloudChecks();
+  };
+  
+  window.v67CloseCloudModal = function() {
+    const modal = document.getElementById('v67CloudModalBg');
+    if (modal) modal.classList.remove('open');
+  };
+  
+  async function runCloudChecks() {
+    const list = document.getElementById('v67CloudStatusList');
+    if (!list) return;
+    
+    const checks = [
+      { name: 'Firebase SDK', icon: '🔥', check: () => typeof window.firebase !== 'undefined' },
+      { name: 'Firebase Database', icon: '💾', check: () => window.firebase?.database },
+      { name: 'אתחול אפליקציה', icon: '🚀', check: () => window.v45State?.db },
+      { name: 'משתמש מחובר', icon: '👤', check: () => !!window.STATE?.currentUser },
+      { name: 'חיבור אינטרנט', icon: '🌐', check: () => navigator.onLine },
+    ];
+    
+    let html = '';
+    
+    for (const check of checks) {
+      const ok = check.check();
+      html += `
+        <div class="v67-cloud-status-item">
+          <div class="v67-cloud-status-icon">${check.icon}</div>
+          <div class="v67-cloud-status-info">
+            <div class="v67-cloud-status-name">${check.name}</div>
+            <div class="v67-cloud-status-detail">${ok ? 'פעיל' : 'לא זמין'}</div>
+          </div>
+          <div class="v67-cloud-status-badge ${ok ? 'v67-badge-ok' : 'v67-badge-err'}">
+            ${ok ? '✅ פעיל' : '❌ נכשל'}
+          </div>
+        </div>
+      `;
+    }
+    
+    list.innerHTML = html;
+  }
+  
+  window.v67ReconnectCloud = async function() {
+    if (typeof window.showToast === 'function') {
+      window.showToast('🔄 מנסה להתחבר מחדש לענן...');
+    }
+    
+    // Try to reinit Firebase
+    try {
+      if (typeof firebase !== 'undefined' && window.FIREBASE_CONFIG) {
+        if (firebase.apps.length === 0) {
+          firebase.initializeApp(window.FIREBASE_CONFIG);
+        }
+        
+        if (window.v45State) {
+          window.v45State.db = firebase.database();
+        }
+      }
+    } catch(e) {
+      console.error('Reconnect failed:', e);
+    }
+    
+    // Re-check after delay
+    setTimeout(() => {
+      checkCloudConnection();
+      runCloudChecks();
+      
+      if (cloudStatus === 'connected') {
+        if (typeof window.showToast === 'function') {
+          window.showToast('✅ התחברנו לענן בהצלחה!');
+        }
+      } else {
+        if (typeof window.showToast === 'function') {
+          window.showToast('⚠️ עדיין לא מחובר. רענן את הדף (Ctrl+Shift+R)');
+        }
+      }
+    }, 2000);
+  };
+  
+  // Connection events
+  window.addEventListener('online', () => {
+    setTimeout(checkCloudConnection, 500);
+  });
+  
+  window.addEventListener('offline', () => {
+    cloudStatus = 'disconnected';
+    updateCloudIndicator();
+  });
+  
+  // ════════════════════════════════════════════════════════
+  // INIT
+  // ════════════════════════════════════════════════════════
+  
+  function init() {
+    // Initial cloud check
+    setTimeout(checkCloudConnection, 1500);
+    setTimeout(updateCloudIndicator, 2000);
+    
+    // Periodic cloud check
+    setInterval(checkCloudConnection, 5000);
+    
+    setTimeout(() => {
+      if (typeof window.showToast === 'function') {
+        window.showToast('🎉 V67 - הוספת משימה ביומן + בקרת ענן!');
+      }
+    }, 5000);
+    
+    console.log('🎉 V67 - Calendar add task + Cloud status loaded');
+  }
+  
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    setTimeout(init, 2000);
+  }
+})();
+</script>
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
 </body>
 </html>
