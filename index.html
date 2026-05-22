@@ -46934,5 +46934,386 @@ th {
 })();
 </script>
 <!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ═══════════════════════════════════════════════════════════════════════
+     V65 - 2 תיקונים חשובים
+     1. הרשאות עובדים - להכניס את אלון + איציק + מנהלות
+     2. Tooltip עזרה (?) - לחיצה במקום ריחוף - שלא יחבא!
+     ═══════════════════════════════════════════════════════════════════════ -->
+
+<style id="t-v65-styles">
+
+/* ════════ FIX 2: TOOLTIP - לחיצה במקום ריחוף ════════ */
+/* כל הסימני שאלה יציגו טולטיפ בלחיצה - לא בריחוף */
+
+/* Override existing help icons */
+.v60-help,
+.v57-help,
+.v46-help-icon {
+  cursor: pointer !important;
+}
+
+/* When clicked - show tooltip with .open class */
+.v60-help.open .v60-tip,
+.v57-help.open .v57-tip,
+.v46-help-icon.open .v46-tooltip {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  visibility: visible !important;
+}
+
+/* V65 - New unified help icon with click-to-open */
+.v65-help-trigger {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 50% !important;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b) !important;
+  color: #15124d !important;
+  font-size: 16px !important;
+  font-weight: 900 !important;
+  cursor: pointer !important;
+  margin: 0 6px !important;
+  vertical-align: middle !important;
+  border: 2px solid #fff !important;
+  box-shadow: 0 4px 12px rgba(251,191,36,0.50) !important;
+  animation: v65-help-pulse 2s ease-in-out infinite !important;
+  font-family: inherit !important;
+  flex-shrink: 0 !important;
+  user-select: none !important;
+}
+
+@keyframes v65-help-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 4px 12px rgba(251,191,36,0.50); }
+  50% { transform: scale(1.1); box-shadow: 0 4px 14px rgba(251,191,36,0.70); }
+}
+
+.v65-help-trigger:hover {
+  transform: scale(1.15) !important;
+}
+
+/* Modal-style tooltip */
+.v65-help-modal-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 999900;
+  background: rgba(15,18,77,0.85);
+  backdrop-filter: blur(16px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: v65-fade-in 0.2s ease-out;
+}
+
+.v65-help-modal-bg.open {
+  display: flex;
+}
+
+@keyframes v65-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.v65-help-modal {
+  background: linear-gradient(145deg, 
+    rgba(30,58,138,0.97),
+    rgba(21,18,77,0.97));
+  backdrop-filter: blur(30px);
+  border: 3px solid #fbbf24;
+  border-radius: 20px;
+  max-width: 480px;
+  width: 100%;
+  padding: 24px;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.60);
+  animation: v65-slide-in 0.3s ease-out;
+}
+
+@keyframes v65-slide-in {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.v65-help-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid rgba(251,191,36,0.40);
+}
+
+.v65-help-modal-icon {
+  font-size: 40px;
+}
+
+.v65-help-modal-title {
+  flex: 1;
+  font-size: 22px;
+  font-weight: 900;
+  color: #fbbf24;
+}
+
+.v65-help-modal-close {
+  background: rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.20);
+  color: #fff;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.v65-help-modal-body {
+  font-size: 15px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.95);
+  line-height: 1.9;
+}
+
+.v65-help-modal-body strong {
+  color: #fbbf24;
+  font-weight: 900;
+}
+
+.v65-help-modal-footer {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255,255,255,0.10);
+  text-align: center;
+}
+
+.v65-help-modal-ok {
+  background: linear-gradient(135deg, #fbbf24, #d4a637);
+  color: #15124d;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 11px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(251,191,36,0.40);
+}
+
+.v65-help-modal-ok:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(251,191,36,0.60);
+}
+
+</style>
+
+<script id="t-v65-features">
+(function() {
+  'use strict';
+  
+  function escapeHtml(s) {
+    if (!s) return '';
+    return String(s).replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+  }
+  
+  // ════════════════════════════════════════════════════════
+  // FIX 1: OVERRIDE PERMISSION FUNCTIONS - allow Alon + Itzik + Managers
+  // ════════════════════════════════════════════════════════
+  
+  function fixPermissions() {
+    // Override canViewEmpProfile to be more permissive
+    window.canViewEmpProfile = function(empId) {
+      const u = window.STATE?.currentUser;
+      if (!u) return false;
+      
+      // Self - always can
+      if (u.id === empId) return true;
+      
+      // Alon (e2) and Itzik (e1) - always can view EVERYTHING
+      if (u.id === 'e1' || u.id === 'e2') return true;
+      
+      // isAdmin flag - always can
+      if (u.isAdmin === true) return true;
+      
+      // Management department
+      if (u.dept === 'הנהלה') return true;
+      
+      // Role contains management keywords
+      const role = (u.role || '').toLowerCase();
+      if (role.includes('מנכ') || role.includes('הנהלה') || role.includes('מנהל')) return true;
+      
+      // Department manager can view their dept
+      const targetEmp = (window.TAHORI_EMPLOYEES || []).find(e => e.id === empId);
+      if (targetEmp && role.includes('מנהל') && u.dept === targetEmp.dept) return true;
+      
+      return false;
+    };
+    
+    // Override canEditEmpDocs
+    window.canEditEmpDocs = function(empId) {
+      const u = window.STATE?.currentUser;
+      if (!u) return false;
+      
+      // Self - always
+      if (u.id === empId) return true;
+      
+      // Alon + Itzik - always
+      if (u.id === 'e1' || u.id === 'e2') return true;
+      
+      // isAdmin
+      if (u.isAdmin === true) return true;
+      
+      // Management
+      if (u.dept === 'הנהלה') return true;
+      const role = (u.role || '').toLowerCase();
+      if (role.includes('מנכ') || role.includes('הנהלה') || role.includes('מנהל')) return true;
+      
+      return false;
+    };
+    
+    console.log('🔓 V65: Permissions opened up for management roles');
+  }
+  
+  // ════════════════════════════════════════════════════════
+  // FIX 2: CLICK-TO-OPEN TOOLTIPS (NO MORE HIDDEN BEHIND DROPDOWN!)
+  // ════════════════════════════════════════════════════════
+  
+  function getHelpData(icon) {
+    // Try to extract title and body from existing tooltip
+    let title = '';
+    let body = '';
+    
+    // Look for v60-tip, v57-tip, or v46-tooltip
+    const tip = icon.querySelector('.v60-tip, .v57-tip, .v46-tooltip');
+    if (tip) {
+      const titleEl = tip.querySelector('.v60-tip-title, .v57-tip-title, .v46-tooltip-title');
+      const bodyEl = tip.querySelector('.v60-tip-body, .v57-tip-body, .v46-tooltip-body');
+      
+      if (titleEl) title = titleEl.innerHTML;
+      if (bodyEl) body = bodyEl.innerHTML;
+    }
+    
+    if (!title) title = '💡 עזרה';
+    if (!body) body = 'מלא את השדה לפי ההנחיות.';
+    
+    return { title, body };
+  }
+  
+  function showHelpModal(title, body) {
+    let modal = document.getElementById('v65HelpModalBg');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'v65HelpModalBg';
+      modal.className = 'v65-help-modal-bg';
+      modal.onclick = (e) => { 
+        if (e.target === modal) closeHelpModal(); 
+      };
+      document.body.appendChild(modal);
+    }
+    
+    modal.innerHTML = `
+      <div class="v65-help-modal" onclick="event.stopPropagation()">
+        <div class="v65-help-modal-header">
+          <span class="v65-help-modal-icon">💡</span>
+          <div class="v65-help-modal-title">${title}</div>
+          <button class="v65-help-modal-close" onclick="window.v65CloseHelp()">✕</button>
+        </div>
+        <div class="v65-help-modal-body">
+          ${body}
+        </div>
+        <div class="v65-help-modal-footer">
+          <button class="v65-help-modal-ok" onclick="window.v65CloseHelp()">
+            ✅ הבנתי, תודה
+          </button>
+        </div>
+      </div>
+    `;
+    
+    modal.classList.add('open');
+  }
+  
+  window.v65CloseHelp = function() {
+    const modal = document.getElementById('v65HelpModalBg');
+    if (modal) modal.classList.remove('open');
+  };
+  
+  function patchHelpIcons() {
+    // Find ALL help icons (v46, v57, v60)
+    const icons = document.querySelectorAll('.v46-help-icon, .v57-help, .v60-help');
+    
+    icons.forEach(icon => {
+      if (icon.dataset.v65Patched === '1') return;
+      
+      // Remove hover-based logic, use click instead
+      const helpData = getHelpData(icon);
+      
+      icon.style.cursor = 'pointer';
+      icon.onclick = function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        showHelpModal(helpData.title, helpData.body);
+        return false;
+      };
+      
+      // Also make focusable
+      icon.setAttribute('tabindex', '0');
+      icon.setAttribute('role', 'button');
+      icon.setAttribute('aria-label', 'עזרה - לחץ לפרטים');
+      
+      // Hide the hover tooltip (we'll show modal instead)
+      const tip = icon.querySelector('.v60-tip, .v57-tip, .v46-tooltip');
+      if (tip) {
+        tip.style.display = 'none';
+      }
+      
+      icon.dataset.v65Patched = '1';
+    });
+  }
+  
+  // ════════════════════════════════════════════════════════
+  // CLOSE MODAL ON ESC
+  // ════════════════════════════════════════════════════════
+  
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      const modal = document.getElementById('v65HelpModalBg');
+      if (modal && modal.classList.contains('open')) {
+        window.v65CloseHelp();
+      }
+    }
+  });
+  
+  // ════════════════════════════════════════════════════════
+  // INIT
+  // ════════════════════════════════════════════════════════
+  
+  function init() {
+    // Fix permissions first
+    fixPermissions();
+    
+    // Patch help icons
+    let tries = 0;
+    const intv = setInterval(function() {
+      tries++;
+      patchHelpIcons();
+      fixPermissions(); // re-apply
+      if (tries > 60) clearInterval(intv);
+    }, 1500);
+    
+    setTimeout(() => {
+      if (typeof window.showToast === 'function') {
+        window.showToast('🎉 V65 - הרשאות מתוקנות + סימני ? בלחיצה!');
+      }
+    }, 4000);
+    
+    console.log('🎉 V65 - Permissions + Click-tooltips loaded');
+  }
+  
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    setTimeout(init, 2000);
+  }
+})();
+</script>
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
 </body>
 </html>
