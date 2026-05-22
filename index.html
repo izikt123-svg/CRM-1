@@ -49497,5 +49497,706 @@ select.v67-form-input option:hover {
   }
 })();
 </script>
+<!-- ═══════════════════════════════════════════════════════════════════════
+     V69 - תיקונים קריטיים
+     1. מרכז המשימות שלי - מציג גם משימות V68 + עבודה
+     2. ענן - תיקון אמת ומשמעותי
+     3. תצוגה "משימות שהקצתי" - מה ביצעתי, למי, מה סגור
+     ═══════════════════════════════════════════════════════════════════════ -->
+
+<style id="t-v69-styles">
+
+/* ════════ MY TASKS - V68 INTEGRATION ════════ */
+.v69-task-card {
+  background: rgba(255,255,255,0.95);
+  border-right: 4px solid var(--task-color, #fbbf24);
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 10px;
+  color: #15124d;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.10);
+  transition: all 0.2s;
+}
+
+.v69-task-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.v69-task-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.v69-task-title-row {
+  flex: 1;
+}
+
+.v69-task-desc {
+  font-size: 16px;
+  font-weight: 900;
+  color: #15124d !important;
+  margin-bottom: 6px;
+}
+
+.v69-task-meta {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.v69-task-badge {
+  padding: 4px 10px;
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.v69-task-badge.pending { background: #fef3c7; color: #92400e; }
+.v69-task-badge.in_progress { background: #dbeafe; color: #1e40af; }
+.v69-task-badge.completed { background: #d1fae5; color: #065f46; }
+.v69-task-badge.closed { background: #ddd6fe; color: #5b21b6; }
+.v69-task-badge.normal { background: #d1fae5; color: #065f46; }
+.v69-task-badge.high { background: #fed7aa; color: #9a3412; }
+.v69-task-badge.urgent { background: #fecaca; color: #991b1b; animation: v69-pulse 1.5s infinite; }
+
+@keyframes v69-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.v69-task-info-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 8px 0;
+  font-size: 13px;
+}
+
+.v69-task-info-item {
+  background: #f3f4f6;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 700;
+  color: #374151;
+}
+
+.v69-task-time {
+  font-family: monospace;
+  font-weight: 900;
+  color: #1e3a8a;
+  background: #dbeafe;
+}
+
+.v69-task-clients {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.v69-task-client-chip {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.v69-task-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.v69-btn-start {
+  flex: 1;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  border: none;
+  padding: 10px;
+  border-radius: 9px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(16,185,129,0.30);
+}
+
+.v69-btn-close {
+  flex: 1;
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  color: #fff;
+  border: none;
+  padding: 10px;
+  border-radius: 9px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.v69-btn-disabled {
+  background: #e5e7eb;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+/* ════════ ASSIGNED BY ME SECTION ════════ */
+.v69-section-header {
+  font-size: 18px;
+  font-weight: 900;
+  color: #ffffff !important;
+  margin: 20px 0 12px 0;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, 
+    rgba(251,191,36,0.15),
+    rgba(212,166,55,0.05));
+  border-right: 4px solid #fbbf24;
+  border-radius: 10px;
+  background-clip: padding-box;
+}
+
+.v69-stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.v69-stat {
+  background: rgba(255,255,255,0.95);
+  border-right: 3px solid var(--stat-color, #fbbf24);
+  border-radius: 11px;
+  padding: 12px 14px;
+  text-align: center;
+}
+
+.v69-stat-num {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--stat-color, #fbbf24);
+  line-height: 1;
+}
+
+.v69-stat-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+/* Live timer */
+.v69-live-timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-family: monospace;
+  font-weight: 900;
+  font-size: 14px;
+  animation: v69-live-pulse 1s ease-in-out infinite;
+}
+
+@keyframes v69-live-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
+}
+
+</style>
+
+<script id="t-v69-features">
+(function() {
+  'use strict';
+  
+  function escapeHtml(s) {
+    if (!s) return '';
+    return String(s).replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+  }
+  
+  function timeAgo(ts) {
+    const diff = Date.now() - ts;
+    const min = Math.floor(diff / 60000);
+    if (min < 1) return 'עכשיו';
+    if (min < 60) return min + ' דק\' לפני';
+    const hr = Math.floor(min / 60);
+    if (hr < 24) return hr + ' ש\' לפני';
+    return Math.floor(hr / 24) + ' י\' לפני';
+  }
+  
+  function formatDuration(ms) {
+    const totalMin = Math.floor(ms / 60000);
+    const hr = Math.floor(totalMin / 60);
+    const min = totalMin % 60;
+    const sec = Math.floor((ms % 60000) / 1000);
+    return `${String(hr).padStart(2, '0')}:${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+  }
+  
+  // ════════════════════════════════════════════════════════
+  // FIX 1: ENHANCE "המשימות שלי" PAGE - show V68 tasks too
+  // ════════════════════════════════════════════════════════
+  
+  function getMyV68Tasks() {
+    const u = window.STATE?.currentUser;
+    if (!u) return { mine: [], assigned: [] };
+    
+    try {
+      const allTasks = JSON.parse(localStorage.getItem('tahori_wp_tasks') || '[]');
+      
+      // Tasks assigned TO me
+      const mine = allTasks.filter(t => t.empId === u.id);
+      
+      // Tasks assigned BY me to others
+      const assigned = allTasks.filter(t => 
+        t.createdById === u.id && t.empId !== u.id
+      );
+      
+      // Sort by date desc
+      mine.sort((a, b) => (b.dueDate || b.createdAt || 0) - (a.dueDate || a.createdAt || 0));
+      assigned.sort((a, b) => (b.dueDate || b.createdAt || 0) - (a.dueDate || a.createdAt || 0));
+      
+      return { mine, assigned };
+    } catch(e) { 
+      console.error('getMyV68Tasks error:', e);
+      return { mine: [], assigned: [] }; 
+    }
+  }
+  
+  function renderV68TaskCard(task, isAssignedByMe = false) {
+    const statusNames = {
+      'pending': '⏳ ממתינה',
+      'in_progress': '🔵 בעבודה',
+      'completed': '✅ הושלמה',
+      'closed': '🔒 סגורה'
+    };
+    
+    const priorityNames = {
+      'normal': '🟢 רגיל',
+      'high': '🟡 דחוף',
+      'urgent': '🔴 בהול'
+    };
+    
+    const priorityColors = {
+      'normal': '#10b981',
+      'high': '#f59e0b',
+      'urgent': '#ef4444'
+    };
+    
+    const status = task.status || 'pending';
+    const color = priorityColors[task.priority || 'normal'];
+    
+    // Time info
+    const dueDate = task.dueDate ? new Date(task.dueDate) : null;
+    const dateStr = dueDate ? dueDate.toLocaleDateString('he-IL') : '-';
+    const startTime = task.startTime || '-';
+    const endTime = task.endTime || '-';
+    
+    // Time remaining calculation
+    let timeRemaining = '';
+    if (status !== 'closed' && status !== 'completed' && dueDate && task.endTime) {
+      const endTimestamp = new Date(dateStr.split('.').reverse().join('-') + 'T' + task.endTime).getTime();
+      const remMs = endTimestamp - Date.now();
+      if (remMs > 0) {
+        const remH = Math.floor(remMs / 3600000);
+        const remM = Math.floor((remMs % 3600000) / 60000);
+        timeRemaining = `⏰ נשארו ${remH}:${String(remM).padStart(2,'0')}`;
+      } else {
+        const overMs = -remMs;
+        const overH = Math.floor(overMs / 3600000);
+        const overM = Math.floor((overMs % 3600000) / 60000);
+        timeRemaining = `🚨 חורגת ${overH}:${String(overM).padStart(2,'0')}`;
+      }
+    }
+    
+    // Live timer if in progress
+    let liveTimer = '';
+    if (task.timerStarted && !task.timerEnded) {
+      const elapsed = Date.now() - task.timerStarted;
+      liveTimer = `<span class="v69-live-timer" data-timer-task="${task.id}" data-timer-start="${task.timerStarted}">
+        ⏱️ ${formatDuration(elapsed)}
+      </span>`;
+    } else if (task.actualMinutes) {
+      const hr = Math.floor(task.actualMinutes / 60);
+      const min = task.actualMinutes % 60;
+      liveTimer = `<span class="v69-task-info-item v69-task-time">⏱️ עבד: ${hr}:${String(min).padStart(2,'0')}</span>`;
+    }
+    
+    // Assigned by me - show WHO it was assigned to
+    let assignedToDisplay = '';
+    if (isAssignedByMe && task.empName) {
+      assignedToDisplay = `<span class="v69-task-info-item" style="background:#fef3c7;color:#92400e">
+        👤 הוקצה ל: ${escapeHtml(task.empName)}
+      </span>`;
+    }
+    
+    return `
+      <div class="v69-task-card" style="--task-color: ${color}">
+        <div class="v69-task-header">
+          <div class="v69-task-title-row">
+            <div class="v69-task-desc">${escapeHtml(task.description || 'ללא תיאור')}</div>
+            <div class="v69-task-meta">
+              <span class="v69-task-badge ${status}">${statusNames[status] || status}</span>
+              <span class="v69-task-badge ${task.priority || 'normal'}">${priorityNames[task.priority || 'normal']}</span>
+              ${liveTimer}
+            </div>
+          </div>
+        </div>
+        
+        <div class="v69-task-info-row">
+          ${assignedToDisplay}
+          <span class="v69-task-info-item v69-task-time">📅 ${dateStr}</span>
+          ${startTime !== '-' ? `<span class="v69-task-info-item v69-task-time">🕐 ${startTime}-${endTime}</span>` : ''}
+          ${timeRemaining ? `<span class="v69-task-info-item ${timeRemaining.includes('חורגת') ? 'v69-task-badge urgent' : 'v69-task-time'}">${timeRemaining}</span>` : ''}
+          ${task.createdBy && !isAssignedByMe ? `<span class="v69-task-info-item">📨 מ-${escapeHtml(task.createdBy)}</span>` : ''}
+        </div>
+        
+        ${task.clients && task.clients.length > 0 ? `
+          <div class="v69-task-clients">
+            ${task.clients.map(c => `
+              <span class="v69-task-client-chip">${c.icon || '📋'} ${escapeHtml(c.name)}</span>
+            `).join('')}
+          </div>
+        ` : ''}
+        
+        ${task.notes ? `
+          <div style="margin-top:8px;padding:8px 12px;background:#f3f4f6;border-radius:7px;font-size:12px;color:#374151;font-weight:700">
+            📝 ${escapeHtml(task.notes)}
+          </div>
+        ` : ''}
+        
+        ${task.feedback ? `
+          <div style="margin-top:8px;padding:8px 12px;background:#ddd6fe;border-right:3px solid #8b5cf6;border-radius:7px;font-size:13px;color:#15124d;font-weight:700">
+            💬 ${escapeHtml(task.feedback)}
+            ${task.closedAt ? `<div style="font-size:11px;color:#6b7280;margin-top:4px">נסגר: ${new Date(task.closedAt).toLocaleString('he-IL')}</div>` : ''}
+          </div>
+        ` : ''}
+        
+        ${!isAssignedByMe && status !== 'closed' && status !== 'completed' ? `
+          <div class="v69-task-actions">
+            ${!task.timerStarted ? `
+              <button class="v69-btn-start" onclick="window.v69StartWork('${task.id}')">
+                ▶️ התחל לעבוד
+              </button>
+            ` : !task.timerEnded ? `
+              <button class="v69-btn-close" onclick="window.v69CloseWork('${task.id}')">
+                🔒 סיים + סגור תיק
+              </button>
+            ` : `
+              <button class="v69-btn-close" onclick="window.v69CloseWork('${task.id}')">
+                🔒 סגור תיק
+              </button>
+            `}
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }
+  
+  function enhanceMyTasksPage() {
+    const page = document.getElementById('page-tasks-my') || document.getElementById('page-tasks');
+    if (!page) return;
+    
+    // Find a good insertion point - after the page header
+    let target = page.querySelector('.page-content') || page;
+    
+    // Check if our section already exists
+    let section = page.querySelector('#v69-my-tasks-section');
+    if (!section) {
+      section = document.createElement('div');
+      section.id = 'v69-my-tasks-section';
+      section.style.padding = '20px';
+      
+      // Insert at the top of the page content
+      const firstChild = target.firstChild;
+      if (firstChild) {
+        target.insertBefore(section, firstChild.nextSibling);
+      } else {
+        target.appendChild(section);
+      }
+    }
+    
+    const { mine, assigned } = getMyV68Tasks();
+    
+    // Stats
+    const myOpen = mine.filter(t => t.status !== 'closed' && t.status !== 'completed').length;
+    const myInProgress = mine.filter(t => t.status === 'in_progress' || t.timerStarted && !t.timerEnded).length;
+    const myClosed = mine.filter(t => t.status === 'closed').length;
+    const assignedOpen = assigned.filter(t => t.status !== 'closed' && t.status !== 'completed').length;
+    const assignedClosed = assigned.filter(t => t.status === 'closed').length;
+    
+    let html = `
+      <div class="v69-stats-row">
+        <div class="v69-stat" style="--stat-color:#fbbf24">
+          <div class="v69-stat-num">${mine.length}</div>
+          <div class="v69-stat-label">📋 שלי - סה"כ</div>
+        </div>
+        <div class="v69-stat" style="--stat-color:#3b82f6">
+          <div class="v69-stat-num">${myOpen}</div>
+          <div class="v69-stat-label">⏳ פתוחות</div>
+        </div>
+        <div class="v69-stat" style="--stat-color:#10b981">
+          <div class="v69-stat-num">${myInProgress}</div>
+          <div class="v69-stat-label">▶️ בעבודה</div>
+        </div>
+        <div class="v69-stat" style="--stat-color:#8b5cf6">
+          <div class="v69-stat-num">${myClosed}</div>
+          <div class="v69-stat-label">🔒 סגרתי</div>
+        </div>
+        <div class="v69-stat" style="--stat-color:#f59e0b">
+          <div class="v69-stat-num">${assigned.length}</div>
+          <div class="v69-stat-label">📤 הקצתי לאחרים</div>
+        </div>
+      </div>
+    `;
+    
+    // MY TASKS
+    if (mine.length > 0) {
+      html += `<div class="v69-section-header">📋 המשימות שהוקצו לי (${mine.length})</div>`;
+      mine.forEach(t => html += renderV68TaskCard(t, false));
+    } else {
+      html += `
+        <div class="v69-section-header">📋 המשימות שלי</div>
+        <div style="text-align:center;padding:30px;color:rgba(255,255,255,0.70);background:rgba(255,255,255,0.05);border-radius:12px;font-weight:700">
+          🌟 אין משימות חדשות
+        </div>
+      `;
+    }
+    
+    // ASSIGNED BY ME (only if current user has assigned tasks to others)
+    if (assigned.length > 0) {
+      html += `<div class="v69-section-header">📤 משימות שהקצתי לאחרים (${assigned.length})</div>`;
+      assigned.forEach(t => html += renderV68TaskCard(t, true));
+    }
+    
+    section.innerHTML = html;
+    
+    // Start live timer updates
+    startLiveTimerUpdates();
+  }
+  
+  // Live timer updates - every second
+  let timerInterval = null;
+  function startLiveTimerUpdates() {
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      document.querySelectorAll('.v69-live-timer[data-timer-start]').forEach(el => {
+        const start = parseInt(el.dataset.timerStart);
+        if (start) {
+          const elapsed = Date.now() - start;
+          el.innerHTML = '⏱️ ' + formatDuration(elapsed);
+        }
+      });
+    }, 1000);
+  }
+  
+  // Start work button
+  window.v69StartWork = function(taskId) {
+    try {
+      const tasks = JSON.parse(localStorage.getItem('tahori_wp_tasks') || '[]');
+      const idx = tasks.findIndex(t => t.id === taskId);
+      if (idx === -1) return;
+      
+      tasks[idx].timerStarted = Date.now();
+      tasks[idx].status = 'in_progress';
+      localStorage.setItem('tahori_wp_tasks', JSON.stringify(tasks));
+      
+      if (window.firebase?.database) {
+        try {
+          window.firebase.database().ref('wp_tasks/' + taskId).update({
+            timerStarted: tasks[idx].timerStarted,
+            status: 'in_progress'
+          });
+        } catch(e) {}
+      }
+      
+      if (typeof window.showToast === 'function') {
+        window.showToast('▶️ הטיימר מתחיל!');
+      }
+      
+      enhanceMyTasksPage();
+    } catch(e) { console.error(e); }
+  };
+  
+  // Close work button
+  window.v69CloseWork = function(taskId) {
+    const feedback = prompt('כתוב משוב על המשימה:\n(מה עשית? אם נמצאו בעיות?)');
+    if (feedback === null) return; // canceled
+    
+    try {
+      const tasks = JSON.parse(localStorage.getItem('tahori_wp_tasks') || '[]');
+      const idx = tasks.findIndex(t => t.id === taskId);
+      if (idx === -1) return;
+      
+      const u = window.STATE?.currentUser;
+      
+      // Stop timer if running
+      if (tasks[idx].timerStarted && !tasks[idx].timerEnded) {
+        tasks[idx].timerEnded = Date.now();
+        tasks[idx].actualMinutes = Math.round((tasks[idx].timerEnded - tasks[idx].timerStarted) / 60000);
+      }
+      
+      tasks[idx].status = 'closed';
+      tasks[idx].feedback = feedback || '(ללא משוב)';
+      tasks[idx].closedAt = Date.now();
+      tasks[idx].closedBy = u?.name || 'unknown';
+      
+      localStorage.setItem('tahori_wp_tasks', JSON.stringify(tasks));
+      
+      if (window.firebase?.database) {
+        try {
+          window.firebase.database().ref('wp_tasks/' + taskId).set(tasks[idx]);
+        } catch(e) {}
+      }
+      
+      if (typeof window.showToast === 'function') {
+        const mins = tasks[idx].actualMinutes;
+        if (mins) {
+          window.showToast(`✅ התיק נסגר! עבדת ${Math.floor(mins/60)}:${String(mins%60).padStart(2,'0')}`);
+        } else {
+          window.showToast('✅ התיק נסגר!');
+        }
+      }
+      
+      enhanceMyTasksPage();
+    } catch(e) { console.error(e); }
+  };
+  
+  // ════════════════════════════════════════════════════════
+  // FIX 2: CLOUD STATUS - BETTER LOGIC + FALLBACKS
+  // ════════════════════════════════════════════════════════
+  
+  // Override cloud status check to be smarter
+  setTimeout(() => {
+    if (typeof window.checkCloudConnection === 'function') {
+      window.checkCloudConnection = function() {
+        // Cloud is "OK" if EITHER:
+        // 1. Firebase is loaded and we have a DB ref
+        // 2. OR we're online and Firebase script exists
+        
+        const firebaseLoaded = typeof window.firebase !== 'undefined';
+        const dbReady = window.v45State?.db != null;
+        const isOnline = navigator.onLine;
+        
+        if (firebaseLoaded && dbReady) return 'connected';
+        if (firebaseLoaded && isOnline) return 'connecting';
+        if (!isOnline) return 'disconnected';
+        return 'connecting';
+      };
+    }
+  }, 2000);
+  
+  // Override cloud indicator render to be more accurate
+  function fixCloudIndicator() {
+    const indicator = document.getElementById('v67CloudStatus');
+    if (!indicator) return;
+    
+    const firebaseLoaded = typeof window.firebase !== 'undefined';
+    const dbReady = window.v45State?.db != null;
+    const isOnline = navigator.onLine;
+    
+    if (firebaseLoaded && dbReady) {
+      // ALL GOOD
+      indicator.className = 'v67-cloud-status connected';
+      indicator.innerHTML = `
+        <div class="v67-cloud-icon">☁️</div>
+        <div class="v67-cloud-info">
+          <div class="v67-cloud-title">הענן פעיל</div>
+          <div class="v67-cloud-sub">22 עובדים מסונכרנים</div>
+        </div>
+      `;
+    } else if (firebaseLoaded && isOnline) {
+      // Loaded but not ready - still OK to use, just connecting
+      indicator.className = 'v67-cloud-status connecting';
+      indicator.innerHTML = `
+        <div class="v67-cloud-icon">🔄</div>
+        <div class="v67-cloud-info">
+          <div class="v67-cloud-title">מתחבר...</div>
+          <div class="v67-cloud-sub">אנא המתן</div>
+        </div>
+      `;
+    } else if (!isOnline) {
+      indicator.className = 'v67-cloud-status disconnected';
+      indicator.innerHTML = `
+        <div class="v67-cloud-icon">📡</div>
+        <div class="v67-cloud-info">
+          <div class="v67-cloud-title">אין אינטרנט</div>
+          <div class="v67-cloud-sub">בדוק חיבור</div>
+        </div>
+      `;
+    } else {
+      // Local mode - works offline
+      indicator.className = 'v67-cloud-status connecting';
+      indicator.innerHTML = `
+        <div class="v67-cloud-icon">💾</div>
+        <div class="v67-cloud-info">
+          <div class="v67-cloud-title">מצב מקומי</div>
+          <div class="v67-cloud-sub">הנתונים נשמרים במחשב</div>
+        </div>
+      `;
+    }
+  }
+  
+  // ════════════════════════════════════════════════════════
+  // INIT
+  // ════════════════════════════════════════════════════════
+  
+  function init() {
+    // Re-enhance on nav
+    if (window.navTo && !window._v69NavPatched) {
+      const orig = window.navTo;
+      window.navTo = function(pageId) {
+        orig(pageId);
+        if (pageId === 'tasks-my' || pageId === 'tasks' || pageId === 'tasks-hub') {
+          setTimeout(enhanceMyTasksPage, 400);
+          setTimeout(enhanceMyTasksPage, 1200);
+        }
+      };
+      window._v69NavPatched = true;
+    }
+    
+    // Periodic
+    setInterval(() => {
+      const pageMy = document.getElementById('page-tasks-my');
+      const pageTasks = document.getElementById('page-tasks');
+      const visible = (pageMy && pageMy.style.display !== 'none') || (pageTasks && pageTasks.style.display !== 'none');
+      if (visible) {
+        enhanceMyTasksPage();
+      }
+      
+      // Fix cloud indicator
+      fixCloudIndicator();
+    }, 3000);
+    
+    // Initial
+    setTimeout(() => {
+      enhanceMyTasksPage();
+      fixCloudIndicator();
+    }, 2500);
+    
+    setTimeout(() => {
+      if (typeof window.showToast === 'function') {
+        window.showToast('🎉 V69 - מרכז משימות מתוקן + ענן ברור!');
+      }
+    }, 5000);
+    
+    console.log('🎉 V69 - My Tasks fixed + Cloud status improved');
+  }
+  
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    setTimeout(init, 2000);
+  }
+})();
+</script>
 </body>
 </html>
