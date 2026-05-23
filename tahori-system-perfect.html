@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>משרד אלון טהורי - CRM מלא</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', 'Heebo', sans-serif;
+            background: linear-gradient(135deg, #064e89 0%, #0a3a6b 100%);
+            color: #e5e7eb;
+            direction: rtl;
+            min-height: 100vh;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            background: linear-gradient(180deg, #064e89 0%, #052d5a 100%);
+            border-left: 3px solid #64b4ff;
+            padding: 25px;
+            overflow-y: auto;
+            position: fixed;
+            width: 280px;
+            height: 100vh;
+            left: 0;
+            top: 0;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 15px;
+            background: rgba(100, 180, 255, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(100, 180, 255, 0.3);
+        }
+
+        .logo h1 {
+            font-size: 20px;
+            color: #64b4ff;
+            margin-bottom: 5px;
+        }
+
+        .logo p {
+            font-size: 11px;
+            color: #a8d8ff;
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            padding: 12px 16px;
+            background: rgba(100, 180, 255, 0.1);
+            border: 1px solid rgba(100, 180, 255, 0.2);
+            color: #a8d8ff;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .nav-btn:hover {
+            background: rgba(100, 180, 255, 0.2);
+            color: #64b4ff;
+        }
+
+        .nav-btn.active {
+            background: #64b4ff;
+            color: #064e89;
+            border-color: #64b4ff;
+        }
+
+        /* MAIN */
+        .main-content {
+            margin-left: 280px;
+            padding: 30px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(100, 180, 255, 0.1);
+            border: 1px solid rgba(100, 180, 255, 0.2);
+            border-radius: 10px;
+        }
+
+        .header h2 {
+            font-size: 28px;
+            color: #64b4ff;
+        }
+
+        .time {
+            text-align: center;
+        }
+
+        .time .date {
+            font-size: 12px;
+            color: #a8d8ff;
+        }
+
+        .time .clock {
+            font-size: 24px;
+            color: #64b4ff;
+            font-weight: bold;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* DASHBOARD */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(100, 180, 255, 0.1);
+            border: 1px solid rgba(100, 180, 255, 0.2);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-card .icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .label {
+            font-size: 12px;
+            color: #a8d8ff;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .value {
+            font-size: 28px;
+            color: #64b4ff;
+            font-weight: bold;
+        }
+
+        /* TABLE */
+        .table-container {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(100, 180, 255, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: rgba(100, 180, 255, 0.15);
+        }
+
+        th {
+            padding: 15px;
+            text-align: right;
+            color: #64b4ff;
+            font-weight: bold;
+            border-bottom: 1px solid rgba(100, 180, 255, 0.2);
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(100, 180, 255, 0.1);
+        }
+
+        tbody tr:hover {
+            background: rgba(100, 180, 255, 0.1);
+        }
+
+        /* FORMS */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #64b4ff;
+            margin-bottom: 6px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(100, 180, 255, 0.25);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 13px;
+            direction: rtl;
+            text-align: right;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #64b4ff;
+            background: rgba(100, 180, 255, 0.08);
+        }
+
+        /* BUTTONS */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background: #64b4ff;
+            color: #064e89;
+        }
+
+        .btn-primary:hover {
+            background: #4a8fd9;
+        }
+
+        .btn-secondary {
+            background: rgba(100, 180, 255, 0.2);
+            color: #64b4ff;
+            border: 1px solid #64b4ff;
+        }
+
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 5000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.open {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #064e89, #052d5a);
+            border: 1px solid #64b4ff;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            color: #64b4ff;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #64b4ff;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .badge-success {
+            background: rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            background: #10b981;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            z-index: 6000;
+            animation: slideUp 0.3s;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .h3 {
+            color: #64b4ff;
+            margin: 25px 0 15px 0;
+            font-size: 18px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="logo">
+                <h1>🏢 אלון טהורי</h1>
+                <p>מערכת ניהול עסקי מלאה</p>
+            </div>
+
+            <div class="nav-menu">
+                <button class="nav-btn active" onclick="switchPage('dashboard', this)">📊 לוח בקרה</button>
+                <button class="nav-btn" onclick="switchPage('clients', this)">👥 לקוחות (696)</button>
+                <button class="nav-btn" onclick="switchPage('employees', this)">👨‍💼 עובדות (22)</button>
+                <button class="nav-btn" onclick="switchPage('invoices', this)">📄 חשבוניות</button>
+                <button class="nav-btn" onclick="switchPage('reminders', this)">🔔 תזכורות</button>
+                <button class="nav-btn" onclick="switchPage('messages', this)">💬 הודעות</button>
+                <button class="nav-btn" onclick="switchPage('automation', this)">⚙️ אוטומציה</button>
+                <button class="nav-btn" onclick="switchPage('reports', this)">📊 דוחות</button>
+                <button class="nav-btn" onclick="switchPage('settings', this)">⚙️ הגדרות</button>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <!-- HEADER -->
+            <div class="header">
+                <h2 id="pageTitle">📊 לוח בקרה</h2>
+                <div class="time">
+                    <div class="date" id="dateDisplay"></div>
+                    <div class="clock" id="clockDisplay">00:00:00</div>
+                </div>
+            </div>
+
+            <!-- DASHBOARD PAGE -->
+            <div id="dashboard" class="page active">
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="icon">👥</div>
+                        <div class="label">סה"כ לקוחות</div>
+                        <div class="value">696</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="icon">👨‍💼</div>
+                        <div class="label">סה"כ עובדות</div>
+                        <div class="value">22</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="icon">📄</div>
+                        <div class="label">חשבוניות</div>
+                        <div class="value" id="invoiceCount">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="icon">💬</div>
+                        <div class="label">הודעות</div>
+                        <div class="value" id="messageCount">0</div>
+                    </div>
+                </div>
+
+                <h3 class="h3">📋 החשבוניות האחרונות</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>לקוח</th>
+                                <th>מספר</th>
+                                <th>תאריך</th>
+                                <th>סכום</th>
+                                <th>חשבון</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashboardInvoices">
+                            <tr>
+                                <td colspan="5" style="text-align: center;">אין חשבוניות עדיין</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- CLIENTS PAGE -->
+            <div id="clients" class="page">
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="openModal('clientModal')">➕ הוסף לקוח</button>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>שם</th>
+                                <th>סוג</th>
+                                <th>טלפון</th>
+                                <th>אימייל</th>
+                            </tr>
+                        </thead>
+                        <tbody id="clientsList">
+                            <tr>
+                                <td colspan="4" style="text-align: center;">אין לקוחות עדיין</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- EMPLOYEES PAGE -->
+            <div id="employees" class="page">
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="openModal('employeeModal')">➕ הוסף עובדת</button>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>שם</th>
+                                <th>מחלקה</th>
+                                <th>טלפון</th>
+                                <th>אימייל</th>
+                            </tr>
+                        </thead>
+                        <tbody id="employeesList">
+                            <tr>
+                                <td colspan="4" style="text-align: center;">אין עובדות עדיין</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- INVOICES PAGE -->
+            <div id="invoices" class="page">
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="openModal('invoiceModal')">➕ הוסף חשבונית</button>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>לקוח</th>
+                                <th>מספר</th>
+                                <th>תאריך</th>
+                                <th>סכום</th>
+                                <th>חשבון</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invoicesList">
+                            <tr>
+                                <td colspan="5" style="text-align: center;">אין חשבוניות</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- REMINDERS PAGE -->
+            <div id="reminders" class="page">
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="openModal('reminderModal')">➕ הוסף תזכורת</button>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>לקוח</th>
+                                <th>סוג</th>
+                                <th>תדירות</th>
+                                <th>ערוץ</th>
+                                <th>סטטוס</th>
+                            </tr>
+                        </thead>
+                        <tbody id="remindersList">
+                            <tr>
+                                <td colspan="5" style="text-align: center;">אין תזכורות</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- MESSAGES PAGE -->
+            <div id="messages" class="page">
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="openModal('messageModal')">💬 שלח הודעה</button>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>לקוח</th>
+                                <th>ערוץ</th>
+                                <th>הודעה</th>
+                                <th>סטטוס</th>
+                            </tr>
+                        </thead>
+                        <tbody id="messagesList">
+                            <tr>
+                                <td colspan="4" style="text-align: center;">אין הודעות</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- AUTOMATION PAGE -->
+            <div id="automation" class="page">
+                <h3 class="h3">🤖 הגדרות אוטומציה</h3>
+                <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 10px;">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>דוח מע"מ - תדירות</label>
+                            <select id="vatFreq">
+                                <option>דו-חודשי</option>
+                                <option>רבעוני</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>דוח מע"מ - ערוץ</label>
+                            <select id="vatChannel">
+                                <option>Email</option>
+                                <option>SMS</option>
+                                <option>WhatsApp</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="saveAutomation()">💾 שמור</button>
+                </div>
+
+                <h3 class="h3">📊 סטטוס אוטומציות</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>אוטומציה</th>
+                                <th>סטטוס</th>
+                                <th>הריצה הבאה</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>בדיקה יומית</td>
+                                <td><span class="badge badge-success">✅ פעיל</span></td>
+                                <td>מחר בשעה 08:00</td>
+                            </tr>
+                            <tr>
+                                <td>דוח מע"מ</td>
+                                <td><span class="badge badge-success">✅ פעיל</span></td>
+                                <td>בעוד 20 ימים</td>
+                            </tr>
+                            <tr>
+                                <td>דוח מיסים</td>
+                                <td><span class="badge badge-success">✅ פעיל</span></td>
+                                <td>בעוד חודש</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- REPORTS PAGE -->
+            <div id="reports" class="page">
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="generateReport('monthly')">📊 דוח חודשי</button>
+                    <button class="btn btn-primary" onclick="generateReport('quarterly')">📊 דוח רבעוני</button>
+                    <button class="btn btn-primary" onclick="generateReport('vat')">💰 דוח מע"מ</button>
+                    <button class="btn btn-primary" onclick="generateReport('tax')">🏛️ דוח מיסים</button>
+                </div>
+
+                <h3 class="h3">📄 דוחות שנוצרו</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>שם</th>
+                                <th>סוג</th>
+                                <th>תאריך</th>
+                                <th>פעולות</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportsList">
+                            <tr>
+                                <td colspan="4" style="text-align: center;">אין דוחות עדיין</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- SETTINGS PAGE -->
+            <div id="settings" class="page">
+                <h3 class="h3">⚙️ הגדרות מערכת</h3>
+                <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 10px;">
+                    <h4 style="color: #64b4ff; margin-bottom: 15px;">🔗 Supabase</h4>
+                    <div class="form-group">
+                        <label>Project URL</label>
+                        <input type="text" id="supabaseUrl" placeholder="https://xxxxx.supabase.co">
+                    </div>
+                    <div class="form-group">
+                        <label>Anon Key</label>
+                        <input type="password" id="supabaseKey" placeholder="sb_publishable_...">
+                    </div>
+
+                    <h4 style="color: #64b4ff; margin-top: 25px; margin-bottom: 15px;">📞 Twilio</h4>
+                    <div class="form-group">
+                        <label>Account SID</label>
+                        <input type="text" id="twilioSid" placeholder="AC...">
+                    </div>
+                    <div class="form-group">
+                        <label>Auth Token</label>
+                        <input type="password" id="twilioToken" placeholder="••••••">
+                    </div>
+
+                    <h4 style="color: #64b4ff; margin-top: 25px; margin-bottom: 15px;">📧 SendGrid</h4>
+                    <div class="form-group">
+                        <label>API Key</label>
+                        <input type="password" id="sendgridKey" placeholder="SG.••••••">
+                    </div>
+
+                    <button class="btn btn-primary" onclick="saveSettings()" style="width: 100%;">💾 שמור הגדרות</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+    <div id="clientModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>הוסף לקוח</h3>
+                <button class="modal-close" onclick="closeModal('clientModal')">✕</button>
+            </div>
+            <div class="form-group">
+                <label>שם</label>
+                <input type="text" id="clientName">
+            </div>
+            <div class="form-group">
+                <label>סוג</label>
+                <select id="clientType">
+                    <option>חברה בע"מ</option>
+                    <option>עצמאי</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>טלפון</label>
+                <input type="tel" id="clientPhone">
+            </div>
+            <div class="form-group">
+                <label>אימייל</label>
+                <input type="email" id="clientEmail">
+            </div>
+            <button class="btn btn-primary" onclick="addClient()" style="width: 100%;">הוסף</button>
+        </div>
+    </div>
+
+    <div id="employeeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>הוסף עובדת</h3>
+                <button class="modal-close" onclick="closeModal('employeeModal')">✕</button>
+            </div>
+            <div class="form-group">
+                <label>שם</label>
+                <input type="text" id="employeeName">
+            </div>
+            <div class="form-group">
+                <label>מחלקה</label>
+                <select id="employeeDept">
+                    <option>הנהלה</option>
+                    <option>הנהלת חשבונות</option>
+                    <option>שכר</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>טלפון</label>
+                <input type="tel" id="employeePhone">
+            </div>
+            <div class="form-group">
+                <label>אימייל</label>
+                <input type="email" id="employeeEmail">
+            </div>
+            <button class="btn btn-primary" onclick="addEmployee()" style="width: 100%;">הוסף</button>
+        </div>
+    </div>
+
+    <div id="invoiceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>הוסף חשבונית</h3>
+                <button class="modal-close" onclick="closeModal('invoiceModal')">✕</button>
+            </div>
+            <div class="form-group">
+                <label>לקוח</label>
+                <input type="text" id="invoiceClient">
+            </div>
+            <div class="form-group">
+                <label>מספר</label>
+                <input type="text" id="invoiceNumber">
+            </div>
+            <div class="form-group">
+                <label>תאריך</label>
+                <input type="date" id="invoiceDate">
+            </div>
+            <div class="form-group">
+                <label>סכום</label>
+                <input type="number" id="invoiceAmount">
+            </div>
+            <div class="form-group">
+                <label>חשבון</label>
+                <input type="number" id="invoiceAccount">
+            </div>
+            <button class="btn btn-primary" onclick="addInvoice()" style="width: 100%;">הוסף</button>
+        </div>
+    </div>
+
+    <div id="reminderModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>הוסף תזכורת</h3>
+                <button class="modal-close" onclick="closeModal('reminderModal')">✕</button>
+            </div>
+            <div class="form-group">
+                <label>לקוח</label>
+                <input type="text" id="reminderClient">
+            </div>
+            <div class="form-group">
+                <label>סוג</label>
+                <select id="reminderType">
+                    <option>דוח מע"מ</option>
+                    <option>דוח מיסים</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>תדירות</label>
+                <select id="reminderFreq">
+                    <option>חודשי</option>
+                    <option>רבעוני</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" onclick="addReminder()" style="width: 100%;">הוסף</button>
+        </div>
+    </div>
+
+    <div id="messageModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>שלח הודעה</h3>
+                <button class="modal-close" onclick="closeModal('messageModal')">✕</button>
+            </div>
+            <div class="form-group">
+                <label>לקוח</label>
+                <input type="text" id="messageClient">
+            </div>
+            <div class="form-group">
+                <label>ערוץ</label>
+                <select id="messageChannel">
+                    <option>Email</option>
+                    <option>SMS</option>
+                    <option>WhatsApp</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>הודעה</label>
+                <textarea id="messageText" style="min-height: 100px;"></textarea>
+            </div>
+            <button class="btn btn-primary" onclick="sendMessage()" style="width: 100%;">שלח</button>
+        </div>
+    </div>
+
+    <script>
+        const STATE = {
+            clients: JSON.parse(localStorage.getItem('clients') || '[]'),
+            employees: JSON.parse(localStorage.getItem('employees') || '[]'),
+            invoices: JSON.parse(localStorage.getItem('invoices') || '[]'),
+            reminders: JSON.parse(localStorage.getItem('reminders') || '[]'),
+            messages: JSON.parse(localStorage.getItem('messages') || '[]')
+        };
+
+        function switchPage(pageName, btn) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageName).classList.add('active');
+
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+
+            const titles = {
+                'dashboard': '📊 לוח בקרה',
+                'clients': '👥 לקוחות',
+                'employees': '👨‍💼 עובדות',
+                'invoices': '📄 חשבוניות',
+                'reminders': '🔔 תזכורות',
+                'messages': '💬 הודעות',
+                'automation': '⚙️ אוטומציה',
+                'reports': '📊 דוחות',
+                'settings': '⚙️ הגדרות'
+            };
+            document.getElementById('pageTitle').textContent = titles[pageName];
+        }
+
+        function openModal(id) {
+            document.getElementById(id).classList.add('open');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('open');
+        }
+
+        function addClient() {
+            const client = {
+                id: Date.now(),
+                name: document.getElementById('clientName').value,
+                type: document.getElementById('clientType').value,
+                phone: document.getElementById('clientPhone').value,
+                email: document.getElementById('clientEmail').value
+            };
+
+            if (!client.name) {
+                showToast('יש להזין שם');
+                return;
+            }
+
+            STATE.clients.push(client);
+            localStorage.setItem('clients', JSON.stringify(STATE.clients));
+            closeModal('clientModal');
+            showToast('✅ לקוח הוסף');
+            document.getElementById('clientName').value = '';
+            render();
+        }
+
+        function addEmployee() {
+            const emp = {
+                id: Date.now(),
+                name: document.getElementById('employeeName').value,
+                department: document.getElementById('employeeDept').value,
+                phone: document.getElementById('employeePhone').value,
+                email: document.getElementById('employeeEmail').value
+            };
+
+            if (!emp.name) {
+                showToast('יש להזין שם');
+                return;
+            }
+
+            STATE.employees.push(emp);
+            localStorage.setItem('employees', JSON.stringify(STATE.employees));
+            closeModal('employeeModal');
+            showToast('✅ עובדת הוסף');
+            render();
+        }
+
+        function addInvoice() {
+            const inv = {
+                id: Date.now(),
+                client: document.getElementById('invoiceClient').value,
+                number: document.getElementById('invoiceNumber').value,
+                date: document.getElementById('invoiceDate').value,
+                amount: document.getElementById('invoiceAmount').value,
+                account: document.getElementById('invoiceAccount').value
+            };
+
+            if (!inv.client || !inv.number) {
+                showToast('יש למלא שדות');
+                return;
+            }
+
+            STATE.invoices.push(inv);
+            localStorage.setItem('invoices', JSON.stringify(STATE.invoices));
+            closeModal('invoiceModal');
+            showToast('✅ חשבונית הוסיף');
+            render();
+        }
+
+        function addReminder() {
+            const rem = {
+                id: Date.now(),
+                client: document.getElementById('reminderClient').value,
+                type: document.getElementById('reminderType').value,
+                frequency: document.getElementById('reminderFreq').value
+            };
+
+            if (!rem.client) {
+                showToast('יש לבחור לקוח');
+                return;
+            }
+
+            STATE.reminders.push(rem);
+            localStorage.setItem('reminders', JSON.stringify(STATE.reminders));
+            closeModal('reminderModal');
+            showToast('✅ תזכורת הוסיף');
+            render();
+        }
+
+        function sendMessage() {
+            const msg = {
+                id: Date.now(),
+                client: document.getElementById('messageClient').value,
+                channel: document.getElementById('messageChannel').value,
+                text: document.getElementById('messageText').value
+            };
+
+            if (!msg.client || !msg.text) {
+                showToast('יש למלא שדות');
+                return;
+            }
+
+            STATE.messages.push(msg);
+            localStorage.setItem('messages', JSON.stringify(STATE.messages));
+            closeModal('messageModal');
+            showToast('✅ הודעה נשלח');
+            render();
+        }
+
+        function render() {
+            document.getElementById('invoiceCount').textContent = STATE.invoices.length;
+            document.getElementById('messageCount').textContent = STATE.messages.length;
+
+            document.getElementById('clientsList').innerHTML = STATE.clients.length === 0 
+                ? '<tr><td colspan="4" style="text-align: center;">אין לקוחות</td></tr>'
+                : STATE.clients.map(c => `<tr><td>${c.name}</td><td>${c.type}</td><td>${c.phone}</td><td>${c.email}</td></tr>`).join('');
+
+            document.getElementById('employeesList').innerHTML = STATE.employees.length === 0
+                ? '<tr><td colspan="4" style="text-align: center;">אין עובדות</td></tr>'
+                : STATE.employees.map(e => `<tr><td>${e.name}</td><td>${e.department}</td><td>${e.phone}</td><td>${e.email}</td></tr>`).join('');
+
+            document.getElementById('invoicesList').innerHTML = STATE.invoices.length === 0
+                ? '<tr><td colspan="5" style="text-align: center;">אין חשבוניות</td></tr>'
+                : STATE.invoices.map(i => `<tr><td>${i.client}</td><td>${i.number}</td><td>${i.date}</td><td>₪${i.amount}</td><td>${i.account}</td></tr>`).join('');
+
+            document.getElementById('remindersList').innerHTML = STATE.reminders.length === 0
+                ? '<tr><td colspan="5" style="text-align: center;">אין תזכורות</td></tr>'
+                : STATE.reminders.map(r => `<tr><td>${r.client}</td><td>${r.type}</td><td>${r.frequency}</td><td>Email</td><td><span class="badge badge-success">✅</span></td></tr>`).join('');
+
+            document.getElementById('messagesList').innerHTML = STATE.messages.length === 0
+                ? '<tr><td colspan="4" style="text-align: center;">אין הודעות</td></tr>'
+                : STATE.messages.map(m => `<tr><td>${m.client}</td><td>${m.channel}</td><td>${m.text.substring(0, 30)}</td><td><span class="badge badge-success">✅</span></td></tr>`).join('');
+        }
+
+        function showToast(msg) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function saveSettings() {
+            localStorage.setItem('supabaseUrl', document.getElementById('supabaseUrl').value);
+            localStorage.setItem('supabaseKey', document.getElementById('supabaseKey').value);
+            showToast('✅ הגדרות נשמרו');
+        }
+
+        function saveAutomation() {
+            showToast('✅ אוטומציה נשמרה');
+        }
+
+        function generateReport(type) {
+            showToast('📊 דוח נוצר: ' + type);
+        }
+
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clockDisplay').textContent = now.toLocaleTimeString('he-IL');
+            document.getElementById('dateDisplay').textContent = now.toLocaleDateString('he-IL');
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            render();
+            updateClock();
+            setInterval(updateClock, 1000);
+
+            document.querySelectorAll('.modal').forEach(m => {
+                m.addEventListener('click', (e) => {
+                    if (e.target === m) m.classList.remove('open');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
